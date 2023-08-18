@@ -20,17 +20,16 @@ import logging
 import os
 import sys
 
-from lxml import etree, isoschematron
-
 from fprime_ac.parsers import XmlParser
 from fprime_ac.utils import ConfigManager
 from fprime_ac.utils.exceptions import (
     FprimeRngXmlValidationException,
     FprimeXmlException,
 )
+from lxml import etree, isoschematron
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 
 #
@@ -55,6 +54,8 @@ class XmlEnumParser:
         """
         self.__name = ""
         self.__namespace = None
+        self.__default = None
+        self.__serialize_type = None
 
         self.__xml_filename = xml_file
         self.__items = []
@@ -62,7 +63,7 @@ class XmlEnumParser:
 
         self.Config = ConfigManager.ConfigManager.getInstance()
 
-        if os.path.isfile(xml_file) == False:
+        if not os.path.isfile(xml_file):
             stri = "ERROR: Could not find specified XML file %s." % xml_file
             raise OSError(stri)
         fd = open(xml_file)
@@ -72,6 +73,7 @@ class XmlEnumParser:
 
         xml_parser = etree.XMLParser(remove_comments=True)
         element_tree = etree.parse(fd, parser=xml_parser)
+        fd.close()  # Close the file, which is only used for the parsing above
 
         # Validate against current schema. if more are imported later in the process, they will be reevaluated
         relax_file_handler = open(ROOTDIR + self.Config.get("schema", "enum"))
@@ -89,7 +91,7 @@ class XmlEnumParser:
 
         enum = element_tree.getroot()
         if enum.tag != "enum":
-            PRINT.info("%s is not a enum definition file" % xml_file)
+            PRINT.info("%s is not an enum definition file" % xml_file)
             sys.exit(-1)
 
         print("Parsing Enum %s" % enum.attrib["name"])
@@ -99,6 +101,16 @@ class XmlEnumParser:
             self.__namespace = enum.attrib["namespace"]
         else:
             self.__namespace = None
+
+        if "default" in enum.attrib:
+            self.__default = enum.attrib["default"]
+        else:
+            self.__default = None
+
+        if "serialize_type" in enum.attrib:
+            self.__serialize_type = enum.attrib["serialize_type"]
+        else:
+            self.__serialize_type = None
 
         for enum_tag in enum:
             if enum_tag.tag == "item":
@@ -172,7 +184,7 @@ class XmlEnumParser:
                     has_value += 1
 
         is_consistent = True
-        if not (has_value == 0 or has_value == total):
+        if not has_value in (0, total):
             is_consistent = False
 
         return is_consistent
@@ -197,6 +209,12 @@ class XmlEnumParser:
     def get_namespace(self):
         return self.__namespace
 
+    def get_default(self):
+        return self.__default
+
+    def get_serialize_type(self):
+        return self.__serialize_type
+
     def get_items(self):
         return self.__items
 
@@ -211,8 +229,13 @@ if __name__ == "__main__":
     print("Enum XML parse test (%s)" % xmlfile)
     xml_parser = XmlEnumParser(xmlfile)
     print(
-        "Enum name: %s, namespace: %s"
-        % (xml_parser.get_name(), xml_parser.get_namespace())
+        "Enum name: %s, namespace: %s, default: %s, serialize_type: %s"
+        % (
+            xml_parser.get_name(),
+            xml_parser.get_namespace(),
+            xml_parser.get_default(),
+            xml_parser.get_serialize_type(),
+        )
     )
     print("Items")
     for item in xml_parser.get_items():

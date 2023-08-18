@@ -1,10 +1,10 @@
 # F´ Implementation Classes
 
-**Note:** for a hands-on walk through of build topologies, please see: [Tutorials](../../Tutorials/README.md)
+**Note:** for a hands-on walk-through of build topologies, please see: [Tutorials](../../Tutorials/README.md)
 
 The code generator takes the XML definitions in the previous section and
 generates C++ base classes. The developer writes classes that derive
-from those base classes and implement the project-specific logic. For
+from those base classes and implements the project-specific logic. For
 input ports and commands, the base classes declare pure virtual methods
 for the derived class to implement. If a developer forgets to implement
 these functions, the compilation of the code will fail. For output
@@ -44,12 +44,12 @@ where
 
 > \<port name\> = The name given to the port in the name= tag in the
 > port section of the XML.
-> 
+>
 > portNum = If the XML writer has defined multiple ports, this allows
 > the developer to know which port was invoked. The value is the port
 > instance indexed to zero. In the event the “max\_number” attribute is
 > not specified (i.e., a single input port), this value will be zero.
-> 
+>
 > \<argument\_list\> = The list of arguments specified in the args
 > section of the port definition XML.
 
@@ -66,18 +66,18 @@ where
 
 > \<port name\> = The name given to the port in the name= tag in the
 > port section of the XML.
-> 
+>
 > portNum = If XML writer has defined multiple ports, this allows the
 > developer to specify which port to invoke. The value is the port
 > instance indexed to zero. In the event the “max\_number” attribute is
 > not specified (i.e., a single output port), this value should be set
 > to zero.
-> 
+>
 > \<argument\_list\> = The list of arguments specified in the args
 > section of the port definition XML.
 
-The call will invoke the port methods define on whatever component the
-component is interconnected with. If those ports are defined as
+The call will invoke the port methods defined on whatever component the
+component in consideration is interconnected with. If those ports are defined as
 synchronous or guarded, the other component’s logic will execute on the
 thread of the call.
 
@@ -92,13 +92,13 @@ status can be checked before calling via this function:
 A method in the base class can be called to get the number of ports
 available. The method has the following naming scheme:
 
-> NATIVE\_INT\_TYPE getNum\_\<port name\>\_\<direction\>Ports(void);
+> NATIVE\_INT\_TYPE getNum\_\<port name\>\_\<direction\>Ports();
 
 where
 
 > \<port name\> = The name given to the port in the name= tag in the
 > port section of the XML.
-> 
+>
 > \<direction\> = The direction of the port, Input or Output.
 
 The developer can use this to automatically scale the code to the number
@@ -120,7 +120,7 @@ where
 
 > \<mnemonic\> = The mnemonic string of the command given in the
 > mnemonic= tag in the command section of the XML.
-> 
+>
 > \<argument\_list\> = The list of arguments specified in the args
 > section of the command definition XML.
 
@@ -158,7 +158,7 @@ where
 
 > \<channel name\> = The name given to the port in the name= tag in the
 > channel section of the XML.
-> 
+>
 > \<type\> = The non-namespace qualified type of the channel as
 > specified in the data\_type= tag in the XML.
 
@@ -181,10 +181,10 @@ where
 
 > \<severity\> = The value of the severity attribute in the XML for the
 > event.
-> 
+>
 > \<event name\> = The name of the event given in the name attribute in
 > the XML.
-> 
+>
 > \<event arguments\> = The argument list of the event.
 
 The call internally adds a timestamp to the event. There is a method
@@ -209,7 +209,7 @@ where
 
 > \<parameter type\> = The type of the parameter specified by the
 > data\_type tag in the XML.
-> 
+>
 > \<parameter name\> = The name of the parameter given in the name
 > attribute in the XML.
 
@@ -310,5 +310,5 @@ finalizer prototype for code that runs when the component exits the
 message loop. These two functions are called on the thread of the active
 component. They are declared as virtual functions in C++, so they are
 not required. The preamble function is named preamble(void) and the
-finalizer finalizer(void). They can be used to do one-time activities
+finalizer is named finalizer(void). They can be used to do one-time activities
 such as data structure initialization and cleanup.

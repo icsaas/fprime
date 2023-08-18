@@ -77,7 +77,7 @@ def _ustr(obj):
     then < returns the unicode object | encodes it with the default encoding | ... >.
     """
     try:
-        # If this works, then _ustr(obj) has the same behaviour as str(obj), so
+        # If this works, then _ustr(obj) has the same behavior as str(obj), so
         # it won't break any existing code.
         return str(obj)
 
@@ -228,7 +228,7 @@ class ParseResults:
                 self.__toklist = toklist[:]
             else:
                 self.__toklist = [toklist]
-            self.__tokdict = dict()
+            self.__tokdict = {}
 
         # this line is related to debugging the asXML bug
         # ~ asList = False
@@ -497,8 +497,7 @@ class ParseResults:
         """Diagnostic method for listing out the contents of a ParseResults.
         Accepts an optional indent argument so that this string can be embedded
         in a nested display of other data."""
-        out = []
-        out.append(indent + str(self.asList()))
+        out = [indent + str(self.asList())]
         keys = list(self.items())
         keys.sort()
         for k, v in keys:
@@ -591,7 +590,7 @@ class ParserElement:
     setDefaultWhitespaceChars = staticmethod(setDefaultWhitespaceChars)
 
     def __init__(self, savelist=False):
-        self.parseAction = list()
+        self.parseAction = []
         self.failAction = None
         # ~ self.name = "<unknown>"  # don't define self.name, let subclasses try/except upcall
         self.strRepr = None
@@ -602,7 +601,7 @@ class ParserElement:
         self.copyDefaultWhiteChars = True
         self.mayReturnEmpty = False
         self.keepTabs = False
-        self.ignoreExprs = list()
+        self.ignoreExprs = []
         self.debug = False
         self.streamlined = False
         self.mayIndexError = True
@@ -716,7 +715,7 @@ class ParserElement:
 
     def setFailAction(self, fn):
         """Define action to perform if parsing fails at this expression.
-        Fail acton fn is a callable function that takes the arguments
+        Fail action fn is a callable function that takes the arguments
         fn(s,loc,expr,err) where:
          - s = string being parsed
          - loc = location where expression match was attempted and failed
@@ -956,7 +955,7 @@ class ParserElement:
         out = []
         lastE = 0
         # force preservation of <TAB>s, to minimize unwanted transformation of string, and to
-        # keep string locs straight between transformString and scanString
+        # keep string locations straight between transformString and scanString
         self.keepTabs = True
         for t, s, e in self.scanString(instring):
             out.append(instring[lastE:s])
@@ -1484,8 +1483,7 @@ class Word(Token):
 
             if self.initCharsOrig != self.bodyCharsOrig:
                 self.strRepr = "W:({},{})".format(
-                    charsAsStr(self.initCharsOrig),
-                    charsAsStr(self.bodyCharsOrig),
+                    charsAsStr(self.initCharsOrig), charsAsStr(self.bodyCharsOrig)
                 )
             else:
                 self.strRepr = "W:(%s)" % charsAsStr(self.initCharsOrig)
@@ -1580,7 +1578,7 @@ class QuotedString(Token):
         """
         super().__init__()
 
-        # remove white space from quote chars - wont work anyway
+        # remove white space from quote chars - won't work anyway
         quoteChar = quoteChar.strip()
         if len(quoteChar) == 0:
             warnings.warn(
@@ -1701,8 +1699,7 @@ class QuotedString(Token):
 
         if self.strRepr is None:
             self.strRepr = "quoted string, starting with {} ending with {}".format(
-                self.quoteChar,
-                self.endQuoteChar,
+                self.quoteChar, self.endQuoteChar
             )
 
         return self.strRepr
@@ -1782,13 +1779,7 @@ class White(Token):
     matched; default is " \\t\\n".  Also takes optional min, max, and exact arguments,
     as defined for the Word class."""
 
-    whiteStrs = {
-        " ": "<SPC>",
-        "\t": "<TAB>",
-        "\n": "<LF>",
-        "\r": "<CR>",
-        "\f": "<FF>",
-    }
+    whiteStrs = {" ": "<SPC>", "\t": "<TAB>", "\n": "<LF>", "\r": "<CR>", "\f": "<FF>"}
 
     def __init__(self, ws=" \t\r\n", min=1, max=0, exact=0):
         super().__init__()
@@ -1941,7 +1932,7 @@ class StringStart(PositionToken):
 
     def parseImpl(self, instring, loc, doActions=True):
         if loc != 0:
-            # see if entire string up to here is just whitespace and ignoreables
+            # see if entire string up to here is just whitespace and ignorables
             if loc != self.preParse(instring, 0):
                 # ~ raise ParseException( instring, loc, "Expected start of text" )
                 exc = self.myException
@@ -2767,7 +2758,7 @@ class Group(TokenConverter):
 class Dict(TokenConverter):
     """Converter to return a repetitive expression as a list, but also as a dictionary.
     Each element can also be referenced using the first token in the expression as its key.
-    Useful for tabular report scraping when the first column can be used as a item key.
+    Useful for tabular report scraping when the first column can be used as an item key.
     """
 
     def __init__(self, exprs):

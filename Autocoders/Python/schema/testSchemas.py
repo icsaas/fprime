@@ -4,7 +4,6 @@ import sys
 import pytest
 from lxml import etree
 
-
 """
 To add tests, go down to the setup function.
 """
@@ -35,17 +34,13 @@ class schema_test:
         """
         self.__validate_file(self.__schema_path, "RNG")
 
-        # Read schema file
-        relax_file_handler = open(self.__schema_path)
+        with open(self.__schema_path) as relax_file_handler:
 
-        # Parse schema file
-        relax_parsed = etree.parse(relax_file_handler)
+            # Parse schema file
+            relax_parsed = etree.parse(relax_file_handler)
 
-        # Compile schema file
-        self.__compiled = etree.RelaxNG(relax_parsed)
-
-        # Close schema file
-        relax_file_handler.close()
+            # Compile schema file
+            self.__compiled = etree.RelaxNG(relax_parsed)
 
     def __validate_file(self, file_name, extension):
         """
@@ -54,7 +49,7 @@ class schema_test:
         if not os.path.exists(file_name):
             raise Exception("File does not exist - {}.".format(file_name))
 
-        if not file_name.upper().endswith("." + extension.upper()):
+        if not file_name.upper().endswith(f".{extension.upper()}"):
             raise Exception(
                 "File does not end with proper extension {} - {}".format(
                     extension, file_name
@@ -67,14 +62,11 @@ class schema_test:
         """
         Returns root tag assuming file path is correct
         """
-        # Read schema file
-        handler = open(file_path)
 
-        # Parse schema file
-        parsed = etree.parse(handler)
+        with open(file_path) as handler:
 
-        # Close schema file
-        handler.close()
+            # Parse schema file
+            parsed = etree.parse(handler)
 
         return parsed
 
@@ -82,7 +74,7 @@ class schema_test:
         """
         Add test case to object.
 
-        test_name - Way of identifiying the test
+        test_name - Way of identifying the test
         xml_path - Path to xml test file
         error_class - What sort of error that is going to be thrown. If error_class is None, it is assumed that the test will pass without raising exceptions.
         parsed_xml - Add the etree of the XML if available.
@@ -124,14 +116,14 @@ class schema_test:
                         root_tag = parsed.getroot().tag
                         if root_tag in list_of_root_tags:
                             self.add_test(
-                                "Path Added: " + file, new_path, None, parsed_xml=parsed
+                                f"Path Added: {file}", new_path, None, parsed_xml=parsed
                             )
                     except:
                         pass
 
     def run_all_tests(self):
         """
-        Runs all the tests consecutivley.
+        Runs all the tests consecutively.
         """
         for index in range(len(self.__test_set_list)):
             self.run_test(index)
@@ -156,9 +148,8 @@ class schema_test:
 
         if not xml_parsed:
             self.__validate_file(test_set[1], "XML")
-            xml_file_handler = open(test_set[1])
-            xml_parsed = etree.parse(xml_file_handler)
-            xml_file_handler.close()
+            with open(test_set[1]) as xml_file_handler:
+                xml_parsed = etree.parse(xml_file_handler)
 
         if test_set[2]:
             with pytest.raises(test_set[2]) as excinfo:
@@ -176,7 +167,7 @@ class schema_test:
                         + str(test_set[2])
                         + "."
                     )
-                    print("File path - " + test_set[1])
+                    print(f"File path - {test_set[1]}")
                     print(excinfo)
                     print("\n")
                     sys.exit(1)
@@ -191,8 +182,8 @@ class schema_test:
                     + " failed validating the current file."
                 )
                 print("\n")
-                print(test_set[0] + " raised an exception but was supposed to pass.")
-                print("File path - " + test_set[1])
+                print(f"{test_set[0]} raised an exception but was supposed to pass.")
+                print(f"File path - {test_set[1]}")
 
                 print("\n")
                 raise
@@ -284,13 +275,14 @@ def setup():
     )
 
     event_test.add_test("All working", "sample_XML_files/event/allWorking.xml", None)
+
     event_test.add_test(
         "Event throttle negative",
         "sample_XML_files/event/negativeThrottle.xml",
         AssertionError,
     )
     event_test.add_test(
-        "Formot string missing",
+        "Format string missing",
         "sample_XML_files/event/missingFormatString.xml",
         AssertionError,
     )
@@ -399,14 +391,19 @@ def setup():
     topology_test.parse_and_add_directory(["deployment", "assembly"], "../test")
 
     # Add schemas to test_list
-    test_list.append(topology_test)
-    test_list.append(component_test)
-    test_list.append(command_test)
-    test_list.append(parameter_test)
-    test_list.append(channel_test)
-    test_list.append(interface_test)
-    test_list.append(serializable_test)
-    test_list.append(event_test)
+
+    test_list.extend(
+        (
+            topology_test,
+            component_test,
+            command_test,
+            parameter_test,
+            channel_test,
+            interface_test,
+            serializable_test,
+            event_test,
+        )
+    )
 
     return test_list
 

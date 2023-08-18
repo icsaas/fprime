@@ -26,7 +26,7 @@ from fprime_ac.generators import formatters
 from fprime_ac.generators.visitors import AbstractVisitor
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
@@ -36,9 +36,11 @@ from fprime_ac.utils import ConfigManager, DictTypeConverter
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.serialize import SerialHeader
-    from fprime_ac.generators.templates.serialize import SerialImport
-    from fprime_ac.generators.templates.serialize import SerialBody
+    from fprime_ac.generators.templates.serialize import (
+        SerialBody,
+        SerialHeader,
+        SerialImport,
+    )
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -80,7 +82,7 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
 
     def _get_args_string(self, obj):
         """
-        Return a string of (type, name) args, comma seperated
+        Return a string of (type, name) args, comma separated
         for use in templates that generate prototypes.
         """
         arg_str = ""
@@ -105,7 +107,7 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
         """
         Return a list of port argument tuples
         """
-        arg_list = list()
+        arg_list = []
 
         for (name, mtype, size, format, comment) in obj.get_members():
             typeinfo = None
@@ -160,7 +162,7 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms obj: the instance of the concrete element to operation on.
+        @param obj: the instance of the concrete element to operation on.
         """
         # Build filename here...
 
@@ -184,17 +186,15 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
         # make empty __init__.py
         open("{}/{}".format(output_dir, "__init__.py"), "w").close()
 
-        # Open file for writting here...
-        DEBUG.info("Open file: %s" % pyfile)
+        # Open file for writing here...
+        DEBUG.info(f"Open file: {pyfile}")
         self.__fp = open(pyfile, "w")
-        if self.__fp is None:
-            raise Exception("Could not open %s file.") % pyfile
         DEBUG.info("Completed")
 
     def startSourceFilesVisit(self, obj):
         """
         Defined to generate header for  command python class.
-        @parms obj: the instance of the command model to visit.
+        @param obj: the instance of the command model to visit.
         """
         c = SerialHeader.SerialHeader()
         d = datetime.datetime.now()
@@ -207,7 +207,7 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Serial types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = SerialImport.SerialImport()
         self._writeTmpl(c, "includes1Visit")
@@ -221,11 +221,11 @@ class SerializableVisitor(AbstractVisitor.AbstractVisitor):
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = SerialBody.SerialBody()
         c.name = obj.get_name()
-        c.mem_list = list()
+        c.mem_list = []
         for (n, t, s, f, comment) in obj.get_members():
             # convert XML types to Python classes
             (

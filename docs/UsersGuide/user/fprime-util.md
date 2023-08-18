@@ -14,42 +14,46 @@ optional arguments:
 subcommands:
   F prime utility command line. Please run one of the commands. For help, run a command with the --help flag.
 
-  {generate,purge,hash-to-file,info,build,impl,check,coverage,install}
+  {generate,purge,hash-to-file,info,build,impl,check,coverage}
     generate            Generate a build cache directory
-    purge               Purge build cache directoriess
+    purge               Purge build cache directories
     hash-to-file        Converts F prime build hash to filename.
     info                Gets fprime-util contextual information.
     build               Build components, ports, and deployments in the specified directory
     impl                Generate implementation template files in the specified directory
     check               Run unit tests in the specified directory
     coverage            Generate unit test coverage reports in the specified directory
-    install             Install the current deployment build artifacts in the specified directory
+    new                 Create new component or port
 ```
 
-The `fprime-util` helper is driven by a series of subcommands listed above. Each perform one aspect
-of the development process and are breifly described below.  The following sections will go into
+The `fprime-util` helper is driven by a series of subcommands listed above. Each performs one aspect
+of the development process and they are briefly described below. The following sections will go into
 each command's usage in more detail.
 
-1. `generate`: generates build caches, one for development, and one with unit test flags enabled.
-   This is the required first step to using the F´ build system. This should be executed once int
-   the deployment directory before developing.  It can be run again after the user runs `purge`.
+1. `generate`: generates build cache directories. It defaults to generating the build cache for
+   release builds, but adding the `--ut` flag will generate a unit testing build cache. This is the
+   required first step to using the F´ build system and must be run before building an F´ deployment
+   or running unit tests. The `purge` command can be used to delete all existing build caches.
 2. `purge`: removes the build caches created with generate. This should be used when the build
-   system has not properly detected changes and need to be redone from the beginning.
-3. `hash-to-file`: If F´ assertions are setup to output file hashes instead of file paths (i.e. when
+   system has not properly detected changes and needs to be redone from the beginning.
+3. `hash-to-file`: If F´ assertions are set up to output file hashes instead of file paths (i.e. when
    `#define FW_ASSERT_LEVEL = FW_FILEID_ASSERT`), convert a given file hash to a full filepath.
-4. `info`: Print information about location of build caches and `fprime-util` commands available in
+4. `info`: Print information about the location of build caches and `fprime-util` commands available in
    the current directory.
 5. `build`: builds the current directory. If in a component directory, it will compile the component
-   library. If in a deployment directory, it will build the binary.
+   library. If in a deployment directory, it will build the binary and the copy build artifacts into
+   the installation directory.
 6. `impl`: Autogenerate boilerplate for components and component unit tests. When creating a new
    component, this command can generate a new skeleton implementation of the component from the
    *Ai.xml file, saving significant development time. Providing the `--ut` flag will generate a unit
    testing skeleton for the component.
-7. `check`: Builds, if necessary, then runs unit tests in current directory. The `--all` runs all
+7. `check`: Builds, if necessary, then runs unit tests in the current directory. The `--all` runs all
    unit tests known to a deployment. The `--leak` flag will check for memory leaks while running the
    unit tests.
 8. `coverage`: Similar to check, but calculates and generates unit test code coverage reports.
-9. `install`: Builds, if necessary, then copies built deployment binaries into the `bin/` directory.
+9. `new`: Creates either a new component or port. Use `--component` or `--port` to specify whether
+    you want to create a component or port. If you would like to use a custom component
+    cookiecutter, specify the template with `component-cookeicutter:` in the settings.ini.
 
 Most `fprime-util` commands support a common set of flags that can be used to modify command
 behavior:
@@ -72,13 +76,6 @@ behavior:
   this behavior to manually specify a deployment. Ex: `fprime-util build -d ~/fprime` will try to
   build the `~/fprime` deployment.
 
-Additionally, there are some advanced flags that can be useful in some situations:
-
-- `--build-type {Release,Testing}`: Manually set the Cmake built type. This is usually automatically
-  determined by `fprime-util` and setting this can cause unexpected behavior.
-- `--build-dir`: This sets the cmake build cache directory. This is usually automatically determined
-  by the deployment and build type and setting this can cause unexpected results.
-
 ## Setting Build Platform
 
 Different F´ deployments will target different operating systems, architectures, and hardware. To
@@ -86,10 +83,10 @@ support a variety of different platforms, `fprime-util` allows specifying a targ
 run against. By default, `fprime-util` will target the `native` platform and build for the host
 computer's platform.
 
-To cross compile for a different platform than that host computer, the platform positional argument
+To cross-compile for a different platform than that host computer, the platform positional argument
 can be passed to `fprime-util`.
 
-For example, to cross compile for the Raspberry Pi, the `raspberrypi` platform can be used:
+For example, to cross-compile for the Raspberry Pi, the `raspberrypi` platform can be used:
 
 ```
 $ fprime-util generate raspberrypi

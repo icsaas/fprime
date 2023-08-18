@@ -1,6 +1,6 @@
 # Constructing the F´ Topology
 
-**Note:** for a hands-on walk through of build topologies, please see: [Tutorials](../../Tutorials/README.md)
+**Note:** For a hands-on walk-through of build topologies, please see: [Tutorials](../../Tutorials/README.md)
 
 The executing software consists of a set of interconnected components
 executing on the threads of the active components or driven by other
@@ -27,7 +27,7 @@ stack. As described in Section 6.7.8.1, the constructor has either a
 name argument or none at all. The developer’s derived class constructors
 may have extra arguments that are particular to that application. If
 classes are declared statically, the developer should keep in mind
-uncertainties about execution ordering.
+uncertainties about execution order.
 
 ## Initializing the Components
 
@@ -62,7 +62,7 @@ where
 
 > \<PortType\> = The full port type specified in the data\_type
 > attribute in the definition of the port in the component XML.
-> 
+>
 > \<port name\> = The name of the port in the name attribute of the port
 > definition.
 
@@ -81,7 +81,7 @@ where
 
 > \<PortType\> = The full port type specified in the data\_type
 > attribute in the definition of the port in the component XML.
-> 
+>
 > \<port name\> = The name of the port in the name attribute of the port
 > definition.
 
@@ -104,7 +104,7 @@ follows:
 
 Get command input port:
 
-> Fw::InputFwCmdPort\* get\_CmdDisp\_InputPort(void);
+> Fw::InputFwCmdPort\* get\_CmdDisp\_InputPort();
 
 Set command status port:
 
@@ -137,7 +137,7 @@ The standard port accessor functions for logging events are as follows:
 Set logging output ports:
 
 > void set\_Log\_OutputPort(Fw::InputLogPort\* port);
-> 
+>
 > void set\_TextLog\_OutputPort(Fw::InputFwLogTextPort\* port);
 
 Set time output ports:
@@ -152,7 +152,7 @@ ports. It can be called once for both.
 The standard port accessor functions for parameters is as follows:
 
 > void set\_ParamGet\_OutputPort(Fw::InputFwPrmGetPort\* port);
-> 
+>
 > void set\_ParamSet\_OutputPort(Fw::InputFwPrmSetPort\* port);
 
 ## Registering Commands

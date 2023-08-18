@@ -13,7 +13,7 @@
 #ifndef UTILS_HASH_HPP
 #define UTILS_HASH_HPP
 
-#include "Fw/Types/EightyCharString.hpp"
+#include "Fw/Types/StringType.hpp"
 #include <Utils/Hash/HashBuffer.hpp>
 
 namespace Utils {
@@ -44,11 +44,13 @@ namespace Utils {
       // ----------------------------------------------------------------------
 
       //! Create a hash value all at once from raw data
-      //!
+      //! \param data: pointer to start of data
+      //! \param len: length of the data
+      //! \param buffer: filled with resulting hash value
       static void hash(
-          const void *data, //! Pointer to start of data
-          const NATIVE_INT_TYPE len, //! Length of the data
-          HashBuffer& buffer //! Resulting hash value
+          const void *data,
+          const NATIVE_INT_TYPE len,
+          HashBuffer& buffer
       );
 
     public:
@@ -59,7 +61,7 @@ namespace Utils {
 
       //! Initialize a Hash object for incremental hash computation
       //!
-      void init(void);
+      void init();
 
       //! Set hash value to specified value
       //!
@@ -68,10 +70,11 @@ namespace Utils {
       );
 
       //! Update an incremental computation with new data
-      //!
+      //! \param data: pointer to start of data to add to hash calculation
+      //! \param len: length of data to add to hash calculation
       void update(
-          const void *const data, //! Pointer to start of data
-          const NATIVE_INT_TYPE len //! Length of the data
+          const void *const data,
+          const NATIVE_INT_TYPE len
       );
 
       //! Finalize an incremental computation and return the result
@@ -87,18 +90,18 @@ namespace Utils {
       //! Get the file extension for the supported hash type
       //! E.g., could return "SHA256"
       //!
-      static const char* getFileExtensionString(void);
+      static const char* getFileExtensionString();
 
       //! Add the extension for the supported hash type
       //!
       static void addFileExtension(
-          const Fw::EightyCharString& baseName, //!< The base name
-          Fw::EightyCharString& extendedName //!< The extended name
+          const Fw::StringBase& baseName, //!< The base name
+          Fw::StringBase& extendedName //!< The extended name
       );
 
       //! Get the length of the file extension string
       //!
-      static NATIVE_UINT_TYPE getFileExtensionLength(void);
+      static NATIVE_UINT_TYPE getFileExtensionLength();
 
     private:
 

@@ -14,7 +14,7 @@
 */
 
 #include <Svc/ActiveRateGroup/test/ut/ActiveRateGroupImplTester.hpp>
-#include <Svc/ActiveRateGroup/ActiveRateGroupImpl.hpp>
+#include <Svc/ActiveRateGroup/ActiveRateGroup.hpp>
 #include <Fw/Obj/SimpleObjRegistry.hpp>
 
 #include <gtest/gtest.h>
@@ -23,11 +23,11 @@
 static Fw::SimpleObjRegistry simpleReg;
 #endif
 
-void connectPorts(Svc::ActiveRateGroupImpl& impl, Svc::ActiveRateGroupImplTester& tester) {
+void connectPorts(Svc::ActiveRateGroup& impl, Svc::ActiveRateGroupImplTester& tester) {
 
     tester.connect_to_CycleIn(0,impl.get_CycleIn_InputPort(0));
 
-    for (NATIVE_INT_TYPE portNum = 0; portNum < (NATIVE_INT_TYPE)FW_NUM_ARRAY_ELEMENTS(impl.m_RateGroupMemberOut_OutputPort); portNum++) {
+    for (NATIVE_UINT_TYPE portNum = 0; portNum < static_cast<NATIVE_UINT_TYPE>(FW_NUM_ARRAY_ELEMENTS(impl.m_RateGroupMemberOut_OutputPort)); portNum++) {
         impl.set_RateGroupMemberOut_OutputPort(portNum,tester.get_from_RateGroupMemberOut(portNum));
     }
 
@@ -51,9 +51,13 @@ TEST(ActiveRateGroupTest,NominalSchedule) {
 
     for (NATIVE_INT_TYPE inst = 0; inst < 3; inst++) {
 
-        NATIVE_UINT_TYPE contexts[] = {1,2,3,4,5,6,7,8,9,10};
+        NATIVE_INT_TYPE contexts[Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS];
+        for (U32 i = 0; i < Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS; i++) {
+            contexts[i] = i + 1;
+        }
 
-        Svc::ActiveRateGroupImpl impl("ActiveRateGroupImpl",contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
+        Svc::ActiveRateGroup impl("ActiveRateGroup");
+        impl.configure(contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
 
         Svc::ActiveRateGroupImplTester tester(impl);
 
@@ -73,9 +77,13 @@ TEST(ActiveRateGroupTest,CycleOverrun) {
 
     for (NATIVE_INT_TYPE inst = 0; inst < 3; inst++) {
 
-        NATIVE_UINT_TYPE contexts[] = {1,2,3,4,5,6,7,8,9,10};
+        NATIVE_INT_TYPE contexts[Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS];
+        for (U32 i = 0; i < Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS; i++) {
+            contexts[i] = i + 1;
+        }
 
-        Svc::ActiveRateGroupImpl impl("ActiveRateGroupImpl",contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
+        Svc::ActiveRateGroup impl("ActiveRateGroup");
+        impl.configure(contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
 
         Svc::ActiveRateGroupImplTester tester(impl);
 
@@ -92,9 +100,13 @@ TEST(ActiveRateGroupTest,CycleOverrun) {
 
 TEST(ActiveRateGroupTest,PingPort) {
 
-    NATIVE_UINT_TYPE contexts[] = {1,2,3,4,5,6,7,8,9,10};
+    NATIVE_INT_TYPE contexts[Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS];
+    for (U32 i = 0; i < Svc::ActiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS; i++) {
+        contexts[i] = i + 1;
+    }
 
-    Svc::ActiveRateGroupImpl impl("ActiveRateGroupImpl",contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
+    Svc::ActiveRateGroup impl("ActiveRateGroup");
+    impl.configure(contexts,FW_NUM_ARRAY_ELEMENTS(contexts));
     Svc::ActiveRateGroupImplTester tester(impl);
 
     tester.init();

@@ -25,24 +25,26 @@ from fprime_ac.generators import formatters
 from fprime_ac.generators.visitors import AbstractVisitor
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
-from fprime_ac.utils import ConfigManager
+from fprime_ac.utils import ConfigManager, TypesList
 
 #
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.port import startPortH
-    from fprime_ac.generators.templates.port import includes1PortH
-    from fprime_ac.generators.templates.port import includes2PortH
-    from fprime_ac.generators.templates.port import namespacePortH
-    from fprime_ac.generators.templates.port import publicPortH
-    from fprime_ac.generators.templates.port import protectedPortH
-    from fprime_ac.generators.templates.port import privatePortH
-    from fprime_ac.generators.templates.port import finishPortH
+    from fprime_ac.generators.templates.port import (
+        finishPortH,
+        includes1PortH,
+        includes2PortH,
+        namespacePortH,
+        privatePortH,
+        protectedPortH,
+        publicPortH,
+        startPortH,
+    )
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -82,18 +84,20 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
 
     def _get_args_string(self, obj):
         """
-        Return a string of (type, name) args, comma seperated
+        Return a string of (type, name) args, comma separated
         for use in templates that generate prototypes.
         """
         args = obj.get_args()
         arg_str = ""
         for arg in args:
             t = arg.get_type()
+            isEnum = False
             #
             # Grab enum type here...
             if isinstance(t, tuple):
                 if t[0][0].upper() == "ENUM":
                     t = t[0][1]
+                    isEnum = True
                 else:
                     PRINT.info(
                         "ERROR: Ill formed enumeration type...(name: %s, type: %s"
@@ -113,8 +117,12 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
                 t = t + " *"
             elif arg.get_modifier() == "reference":
                 t = t + " &"
-            else:
+            elif arg.get_modifier() == "value":
                 t = t + " "
+            elif TypesList.isPrimitiveType(t) or isEnum:
+                t = t + " "
+            else:
+                t = "const " + t + " &"
 
             arg_str += "{}{}".format(t, arg.get_name())
             arg_str += ", "
@@ -168,17 +176,28 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
                 "F32",
                 "F64",
                 "bool",
-                "FwOpcodeType",
+                "FwBuffSizeType",
                 "FwChanIdType",
+                "FwEnumStoreType",
                 "FwEventIdType",
+                "FwIndexType",
+                "FwOpcodeType",
+                "FwPacketDescriptorType",
                 "FwPrmIdType",
+                "FwSizeType",
+                "FwTimeBaseStoreType",
+                "FwTimeContextStoreType",
+                "FwTlmPacketizeIdType",
                 "NATIVE_INT_TYPE",
                 "NATIVE_UINT_TYPE",
                 "POINTER_CAST",
             ]:
                 t = "sizeof(" + t + cl
             else:
-                t = t + "::SERIALIZED_SIZE"
+                if arg.get_modifier() == "pointer":
+                    t = "sizeof(" + t + "*)"
+                else:
+                    t = t + "::SERIALIZED_SIZE"
             arg_str += t
             arg_str += " + "
         arg_str = arg_str.strip(" + ")
@@ -188,7 +207,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Return a list of port argument tuples
         """
-        arg_list = list()
+        arg_list = []
 
         for arg in obj.get_args():
             n = arg.get_name()
@@ -213,14 +232,13 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         # Build filename here...
         if self.__config.get("port", "XMLDefaultFileName") == "True":
             filename = obj.get_type() + self.__config.get("port", "PortH")
             PRINT.info(
-                "Generating code filename: %s, using XML namespace and name attributes..."
-                % filename
+                f"Generating code filename: {filename}, using XML namespace and name attributes..."
             )
         else:
             xml_file = obj.get_xml_filename()
@@ -242,11 +260,9 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
                 PRINT.info(msg)
                 raise ValueError(msg)
 
-        # Open file for writting here...
+        # Open file for writing here...
         DEBUG.info("Open file: %s" % filename)
         self.__fp = open(filename, "w")
-        if self.__fp is None:
-            raise Exception("Could not open %s file.") % filename
         DEBUG.info("Completed")
 
     def startSourceFilesVisit(self, obj):
@@ -265,7 +281,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Port types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = includes1PortH.includes1PortH()
         self._writeTmpl(c, "includes1Visit")
@@ -274,7 +290,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate internal includes within a file.
         Usually used for data type includes and system includes.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = includes2PortH.includes2PortH()
         c.c_includes_list = obj.get_includes()
@@ -322,7 +338,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate namespace code within a file.
         Also any pre-condition code is generated.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = namespacePortH.namespacePortH()
         if obj.get_namespace() is None:
@@ -354,7 +370,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = publicPortH.publicPortH()
         c.name = obj.get_type()
@@ -382,7 +398,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
     def protectedVisit(self, obj):
         """
         Defined to generate protected stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = protectedPortH.protectedPortH()
         self._writeTmpl(c, "protectedVisit")
@@ -390,7 +406,7 @@ class PortHVisitor(AbstractVisitor.AbstractVisitor):
     def privateVisit(self, obj):
         """
         Defined to generate private stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = privatePortH.privatePortH()
         c.name = obj.get_type()

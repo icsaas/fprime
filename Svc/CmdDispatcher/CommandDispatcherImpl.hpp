@@ -64,7 +64,7 @@ namespace Svc {
             //!  \param opCode the opcode of the completed command.
             //!  \param cmdSeq the sequence number assigned to the command when it was dispatched
             //!  \param response the completion status of the command
-            void compCmdStat_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, Fw::CommandResponse response);
+            void compCmdStat_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, const Fw::CmdResponse &response);
             //!  \brief component command buffer handler
             //!
             //!  The command buffer handler is called to submit a new
@@ -72,7 +72,7 @@ namespace Svc {
             //!
             //!  \param portNum the number of the incoming port.
             //!  \param data the buffer containing the command.
-            //!  \param context a user value returned with the statuss
+            //!  \param context a user value returned with the status
             void seqCmdBuff_handler(NATIVE_INT_TYPE portNum, Fw::ComBuffer &data, U32 context);
             //!  \brief component command registration handler
             //!
@@ -86,7 +86,7 @@ namespace Svc {
             //!  \brief component ping handler
             //!
             //!  The ping handler responds to messages to verify that the task
-            //!  is still executing. Will call output poing port
+            //!  is still executing. Will call output ping port
             //!
             //!  \param portNum the number of the incoming port.
             //!  \param opCode the opcode being registered.
@@ -101,7 +101,7 @@ namespace Svc {
             void CMD_NO_OP_cmdHandler(FwOpcodeType opCode, U32 cmdSeq);
             //!  \brief NO_OP with string command handler
             //!
-            //!  A test command that receives a string an sends an event
+            //!  A test command that receives a string and sends an event
             //!  with the string as an argument
             //!
             //!  \param opCode the NO_OP_STRING opcode.
@@ -123,7 +123,7 @@ namespace Svc {
             //!  This command will clear the table tracking the completion of commands.
             //!  It is meant to be used if the tracking table has gotten full because of
             //!  a software failure. It is dangerous in that it can clear a command
-            //!  that a sequencer is watiting for.
+            //!  that a sequencer is waiting for.
             //!
             //!  \param opCode the CLEAR_TRACKING opcode.
             //!  \param cmdSeq the assigned sequence number for the command
@@ -153,7 +153,7 @@ namespace Svc {
             //! but are not yet complete. When a new command opcode is received,
             //! the status port that would be used to report the completion status
             //! is checked. If it is connected, then an entry is placed in this table.
-            //! The "used" flag is set, and the "seq" member is set to the the
+            //! The "used" flag is set, and the "seq" member is set to the
             //! assigned sequence number for the command. The "opCode" field is
             //! used for the opcode, and the "callerPort" field is used to store
             //! the port number of the caller so the status can be reported back to

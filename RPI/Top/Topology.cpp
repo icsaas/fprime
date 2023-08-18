@@ -4,16 +4,19 @@
 #include <Os/Task.hpp>
 #include <Os/Log.hpp>
 #include <Os/File.hpp>
+#include <Os/TaskString.hpp>
 #include <Fw/Types/MallocAllocator.hpp>
 #include <RPI/Top/RpiSchedContexts.hpp>
+#include <Svc/FramingProtocol/FprimeProtocol.hpp>
 
 enum {
-    DOWNLINK_PACKET_SIZE = 500,
-    DOWNLINK_BUFFER_STORE_SIZE = 2500,
-    DOWNLINK_BUFFER_QUEUE_SIZE = 5,
     UPLINK_BUFFER_STORE_SIZE = 3000,
-    UPLINK_BUFFER_QUEUE_SIZE = 30
+    UPLINK_BUFFER_QUEUE_SIZE = 30,
+    UPLINK_BUFFER_MGR_ID = 200
 };
+
+Svc::FprimeDeframing deframing;
+Svc::FprimeFraming framing;
 
 // Component instances
 
@@ -32,8 +35,7 @@ static NATIVE_UINT_TYPE rg1HzContext[] = {0,0,Rpi::CONTEXT_RPI_DEMO_1Hz,0,0,0,0,
 Svc::ActiveRateGroupImpl rateGroup1HzComp("RG1Hz",rg1HzContext,FW_NUM_ARRAY_ELEMENTS(rg1HzContext));
 
 // Command Components
-Svc::GroundInterfaceComponentImpl groundIf("GNDIF");
-Drv::SocketIpDriverComponentImpl socketIpDriver("SocketIpDriver");
+Drv::TcpClientComponentImpl comm(FW_OPTIONAL_NAME("Tcp"));
 
 #if FW_ENABLE_TEXT_LOGGING
 Svc::ConsoleTextLoggerImpl textLogger("TLOG");
@@ -50,21 +52,24 @@ Svc::TlmChanImpl chanTlm("TLM");
 Svc::CommandDispatcherImpl cmdDisp("CMDDISP");
 
 // This needs to be statically allocated
-Fw::MallocAllocator seqMallocator;
-
+Fw::MallocAllocator mallocator;
 Svc::CmdSequencerComponentImpl cmdSeq("CMDSEQ");
 
 Svc::PrmDbImpl prmDb("PRM","PrmDb.dat");
 
 Svc::FileUplink fileUplink("fileUplink");
 
-Svc::FileDownlink fileDownlink ("fileDownlink", DOWNLINK_PACKET_SIZE);
+Svc::FileDownlink fileDownlink ("fileDownlink");
 
-Svc::BufferManager fileDownlinkBufferManager("fileDownlinkBufferManager", DOWNLINK_BUFFER_STORE_SIZE, DOWNLINK_BUFFER_QUEUE_SIZE);
-
-Svc::BufferManager fileUplinkBufferManager("fileUplinkBufferManager", UPLINK_BUFFER_STORE_SIZE, UPLINK_BUFFER_QUEUE_SIZE);
+Svc::BufferManagerComponentImpl fileUplinkBufferManager("fileUplinkBufferManager");
 
 Svc::HealthImpl health("health");
+
+Svc::StaticMemoryComponentImpl staticMemory(FW_OPTIONAL_NAME("staticMemory"));
+
+Svc::FramerComponentImpl downlink(FW_OPTIONAL_NAME("downlink"));
+
+Svc::DeframerComponentImpl uplink(FW_OPTIONAL_NAME("uplink"));
 
 Svc::AssertFatalAdapterComponentImpl fatalAdapter("fatalAdapter");
 
@@ -83,14 +88,14 @@ Drv::LinuxGpioDriverComponentImpl gpio17Drv("gpio17Drv");
 Rpi::RpiDemoComponentImpl rpiDemo("rpiDemo");
 
 void constructApp(U32 port_number, char* hostname) {
-
+    staticMemory.init(0);
     // Initialize rate group driver
     rateGroupDriverComp.init();
 
     // Initialize the rate groups
     rateGroup10HzComp.init(10,0);
     rateGroup1HzComp.init(10,1);
-    
+
 #if FW_ENABLE_TEXT_LOGGING
     textLogger.init();
 #endif
@@ -106,17 +111,18 @@ void constructApp(U32 port_number, char* hostname) {
     cmdDisp.init(20,0);
 
     cmdSeq.init(10,0);
-    cmdSeq.allocateBuffer(0,seqMallocator,5*1024);
+    cmdSeq.allocateBuffer(0,mallocator,5*1024);
 
     prmDb.init(10,0);
 
-    groundIf.init(0);
-    socketIpDriver.init(0);
+    downlink.init(0);
+    uplink.init(0);
+    comm.init(0);
 
     fileUplink.init(30, 0);
+    fileDownlink.configure(1000, 200, 100, 10);
     fileDownlink.init(30, 0);
     fileUplinkBufferManager.init(0);
-    fileDownlinkBufferManager.init(1);
 
     fatalAdapter.init(0);
     fatalHandler.init(0);
@@ -133,6 +139,8 @@ void constructApp(U32 port_number, char* hostname) {
     gpio17Drv.init(0);
 
     rpiDemo.init(10,0);
+    downlink.setup(framing);
+    uplink.setup(deframing);
 
     constructRPIArchitecture();
 
@@ -173,22 +181,29 @@ void constructApp(U32 port_number, char* hostname) {
     // load parameters
     rpiDemo.loadParameters();
 
+    // set up BufferManager instances
+    Svc::BufferManagerComponentImpl::BufferBins upBuffMgrBins;
+    memset(&upBuffMgrBins,0,sizeof(upBuffMgrBins));
+    upBuffMgrBins.bins[0].bufferSize = UPLINK_BUFFER_STORE_SIZE;
+    upBuffMgrBins.bins[0].numBuffers = UPLINK_BUFFER_QUEUE_SIZE;
+    fileUplinkBufferManager.setup(UPLINK_BUFFER_MGR_ID,0,mallocator,upBuffMgrBins);
+
     // Active component startup
     // start rate groups
-    rateGroup10HzComp.start(0, 120,10 * 1024);
-    rateGroup1HzComp.start(0, 119,10 * 1024);
+    rateGroup10HzComp.start();
+    rateGroup1HzComp.start();
     // start dispatcher
-    cmdDisp.start(0,101,10*1024);
+    cmdDisp.start();
     // start sequencer
-    cmdSeq.start(0,100,10*1024);
+    cmdSeq.start();
     // start telemetry
-    eventLogger.start(0,98,10*1024);
-    chanTlm.start(0,97,10*1024);
-    prmDb.start(0,96,10*1024);
+    eventLogger.start();
+    chanTlm.start();
+    prmDb.start();
 
-    fileDownlink.start(0, 100, 10*1024);
-    fileUplink.start(0, 100, 10*1024);
-    rpiDemo.start(0, 100, 10*1024);
+    fileDownlink.start();
+    fileUplink.start();
+    rpiDemo.start();
 
     // Use the mini-UART for our serial connection
     // https://www.raspberrypi.org/documentation/configuration/uart.md
@@ -225,15 +240,18 @@ void constructApp(U32 port_number, char* hostname) {
         return;
     }
 
-    uartDrv.startReadThread(100,10*1024,-1);
+    uartDrv.startReadThread();
 
-    // Initialize socket server
-    if (hostname != NULL && port_number != 0) {
-        socketIpDriver.startSocketTask(100, 10 * 1024, hostname, port_number);
+    // Initialize socket server if and only if there is a valid specification
+    if (hostname != nullptr && port_number != 0) {
+        Os::TaskString name("ReceiveTask");
+        // Uplink is configured for receive so a socket task is started
+        comm.configure(hostname, port_number);
+        comm.startSocketTask(name);
     }
 }
 
-void exitTasks(void) {
+void exitTasks() {
     uartDrv.quitReadThread();
     linuxTimer.quit();
     rateGroup1HzComp.exit();
@@ -246,5 +264,9 @@ void exitTasks(void) {
     fileDownlink.exit();
     cmdSeq.exit();
     rpiDemo.exit();
+    comm.stopSocketTask();
+    (void) comm.joinSocketTask(nullptr);
+    cmdSeq.deallocateBuffer(mallocator);
+    fileUplinkBufferManager.cleanup();
 }
 

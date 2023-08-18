@@ -12,8 +12,8 @@ components and modify them to suit project needs. Currently, there are 7 compone
 -   `channel-table` displays telemetry data from the spacecraft
 -   `logging` displays logged messages stored as the GDS runs
 
-Through an XML specification, users can setup their dashboard and upload it to the F´ GDS to enable it in the system.
-Once uploaded, the Dashboard should load the file and assemble the specified GUI as long as the XML is error free.
+Through an XML specification, users can set up their dashboard and upload it to the F´ GDS to enable it in the system.
+Once uploaded, the Dashboard should load the file and assemble the specified GUI as long as the XML is error-free.
 
 A more complete reference is available here: [GDS Dashboard Reference](../dev/gds-dashboard-reference.md).
 
@@ -38,7 +38,7 @@ At any point, you can upload a new configuration file to change your Dashboard.
 
 ## Setting Up XML Configuration Files
 
-The dashboard is driven by loading an XML file which specifies the layout of this tab.  In this, and the next few
+The dashboard is driven by loading an XML file that specifies the layout of this tab.  In this, and the next few
 sections the XML format will be discussed.  At its most basic, the XML format is HTML with a few extra custom F´ tags
 used to display our components.  HTML may be used to help the user achieve the display they'd like, however; the entire
 display can be configured from our custom components and thus no HTML knowledge is required.
@@ -77,7 +77,7 @@ the above table.
 | fields       | List of fields (columns) shown      | list    | any column field names |
 | filter-text  | Text to filter displayed items      | string  | any |
 | items-shown  | Names of items to restrict display  | list    | any |
-| compact      | Use minimalist display of component | keyword | | 
+| compact      | Use minimalist display of component | keyword | |
 
 Two of the most basic properties are described below. These were chosen because they show an example of using a string
 property and a space-separated list property.  Keyword properties are specified without the `=...` portion and thus are
@@ -97,8 +97,8 @@ understand. The title property can be set by specifying the XML attribute as a s
 
 The fields property is used to restrict any of the table-driven components to minimize the number of columns that are
 shown. Thus, users can show just the columns of interest and ignore the others associated with the table owned by the
-component. This property is a list of values that are space-separated, and use single quotes (') to contain values that
-included spaces.  An example of both is shown below:
+component. This property is a list of space-separated values, and uses single quotes (') to contain values that
+included spaces. An example of both is shown below:
 
 ```xml
     <channel-table fields="Description 'Channel Value' 'Channel Name'">
@@ -116,7 +116,7 @@ will be rendered into the following display.
 ![Example ](../media/example_dashboard.png)
 
 This view was rendered from the following XML.  It is designed to be somewhat self-descriptive and should act as a good
-starting point for building your own dashboards. 
+starting point for building your own dashboards.
 
 ```xml
 <dashboard-box title="The Big Green Example Box" color="green">
@@ -177,4 +177,3 @@ starting point for building your own dashboards.
 This guide has introduced and walked through an example of the XML dashboards available to help customize the F´ GDS
 GUI. Users may use the technology to build their own views into the system. A more complete reference for the components
 used to build the GUI is available here: [GDS Dashboard Reference](../dev/gds-dashboard-reference.md).
-

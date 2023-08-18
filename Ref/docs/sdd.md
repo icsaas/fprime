@@ -31,7 +31,7 @@ It interconnects those application components with reusable service components:
 |Health|Pings active components in the topology to verify their aliveness|[HTML](../../Svc/Health/docs/sdd.html) [MD](../../Svc/Health/docs/sdd.md)|
 |PrmDb|Loads sets of parameters from storage at startup and provides them to components|[HTML](../../Svc/PrmDb/docs/sdd.html) [MD](../../Svc/PrmDb/docs/sdd.md)|
 |RateGroupDriver|Sends messages to ActiveRateGroup instances to run a cycle|[HTML](../../Svc/RateGroupDriver/docs/sdd.html) [MD](../../Svc/RateGroupDriver/docs/sdd.md)|
-|TlmChan|Provides storage for telemetry channels and periocially sends them to the ground system|[HTML](../../Svc/TlmChan/docs/sdd.html) [MD](../../Svc/TlmChan/docs/sdd.md)|
+|TlmChan|Provides storage for telemetry channels and periodically sends them to the ground system|[HTML](../../Svc/TlmChan/docs/sdd.html) [MD](../../Svc/TlmChan/docs/sdd.md)|
 |PolyDb|Manages a database of polymorphic data values|[HTML](../../Svc/PolyDb/docs/sdd.html) [MD](../../Svc/PolyDb/docs/sdd.md)|
 
 There is a set of application-level components developed on previous projects that can be used:
@@ -53,7 +53,7 @@ Each software module that has a Software Design Document written can be found he
 
 ## 2. Topology
 
-The topology of the reference example is the interconnection of all the components used in the reference deployment (a deployment is a set of components connected together and compiled into a binary). There are a large number of connections so it is not feasible to show them all in one diagram. The following sections have views of the topology that show the connections for a particular purpose. The topology diagrams will be broken down into the core set of Command and Data Handling (C&DH) connections that would be reused from project to project as well as the connections unique to the reference example. The diagrams were generating using MagicDraw, while the [XML](../Top/RefTopologyAppAi.xml) defining the topology connections was generated using the MagicDraw plug-in developed for ISF.
+The topology of the reference example is the interconnection of all the components used in the reference deployment (a deployment is a set of components connected together and compiled into a binary). There are a large number of connections so it is not feasible to show them all in one diagram. The following sections have views of the topology that show the connections for a particular purpose. The topology diagrams will be broken down into the core set of Command and Data Handling (C&DH) connections that would be reused from project to project as well as the connections unique to the reference example. The diagrams were generated using MagicDraw, while the [XML](../Top/RefTopologyAppAi.xml) defining the topology connections was generated using the MagicDraw plug-in developed for ISF.
 
 ### 2.1 Commanding
 

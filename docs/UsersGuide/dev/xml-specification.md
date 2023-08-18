@@ -1,6 +1,6 @@
 # F´ XML Specifications
 
-**Note:** for a hands-on walk through of build topologies, please see: [Tutorials](../../Tutorials/README.md). This is
+**Note:** For a hands-on walk-through of build topologies, please see: [Tutorials](../../Tutorials/README.md). This is
 an advanced specification and the hands-on tutorial is likely better for new users.
 
 Serializable types, arrays, ports, and components are defined in XML files.
@@ -58,10 +58,12 @@ specification.
 | comment                    |           | Used for a comment describing the type. Is placed as a Doxygen-compatible tag in the class declaration.                                              |
 | members                    |           | Starts the region of the declaration where type members are specified.                                                                               |
 | member                     |           | Defines a member of the type.                                                                                                                        |
-| member                     | type      | The type of the member. Should be a built-in type, ENUM, string, an XML-specified type, or a user-written serializable type. |
 | member                     | name      | Defines the member name.                                                                                                                             |
-| member                     | size      | Specifies that the member is an array of the type with the specified size.                                                                           |
+| member                     | type      | The type of the member. Should be a built-in type, ENUM, string, an XML-specified type, or a user-written serializable type. |
+| member                     | size      | Required when type is string; otherwise not allowed. Specifies the string size.|
+| member                     | array\_size | Specifies that the member is an array of the type with the specified size.|
 | member                     | format    | Specifies a format specifier when displaying the member.                                                                                             |
+| default                    |           | Specifies the default value of the member (optional).                                                                              |
 | enum                       |           | Specifies an enumeration when the member type=ENUM.                                                                                                  |
 | enum                       | name      | Enumeration type name.                                                                                                                               |
 | item                       |           | Specifies a member of the enumeration.                                                                                                               |
@@ -95,11 +97,12 @@ this specification:
 ```xml
 <serializable name="Switch">
   <members>
-    <member name="state">
-      <enum name="SwitchState" type="ENUM">
-        <item name="OFF" value="0">
-        <item name="ON" value="1">
+    <member name="state" type="ENUM">
+      <enum name="SwitchState">
+        <item name="OFF" value="0"/>
+        <item name="ON" value="1"/>
       </enum>
+      <default>OFF</default>
     </member>
   </members>
 </serializable>
@@ -108,7 +111,8 @@ this specification:
 This file defines a Serializable type `Switch`
 with one member `state`.
 Its type is `SwitchState`, which is an enumeration with
-enumerated constants `OFF` and `ON`.
+enumerated constants `OFF` and `ON`. Using the default child element,
+the default value will be OFF.
 
 Alternatively, you can specify an enumeration *E* as a separate XML type.
 Then you can do the following:
@@ -116,15 +120,15 @@ Then you can do the following:
 1. Generate a C++ representation of *E* that you can include in C++
 files and use on its own.
 
-2. Use the XML representation of *E* in Serializable XML types, in Array XML 
-types, in port arguments, in telemetry channels, and in event arguments.
+2. Use the XML representation of *E* in Serializable XML types, Array XML
+types, port arguments, telemetry channels, and event arguments.
 
-As an example, you can create a file `SwitchStateEnumAi.xml` that specifies an 
+As an example, you can create a file `SwitchStateEnumAi.xml` that specifies an
 XML enumeration type `SwitchState`
-with enumerated constants `OFF` and `ON`, like this:
+with enumerated constants `OFF` and `ON` and set to `OFF` by default, like this:
 
 ```xml
-<enum name="SwitchState">
+<enum name="SwitchState" default="OFF">
   <item name="OFF" value="0"/>
   <item name="ON" value="1"/>
 </enum>
@@ -133,7 +137,7 @@ with enumerated constants `OFF` and `ON`, like this:
 By running the code generator on this file, you can generate C++
 files `SwitchStateEnumAc.hpp` and `SwitchStateEnumAc.cpp`
 that define the C++ representation of the type.
-Anywhere that you include `SwitchStateEnumAc.hpp` in your C++ code, you can 
+Anywhere that you include `SwitchStateEnumAc.hpp` in your C++ code, you can
 use the enumerated constants `SwitchState::OFF` and `SwitchState::ON`.
 If you import `SwitchStateEnumAi.xml` into another XML definition,
 then you can use the type `SwitchState` there.
@@ -142,7 +146,7 @@ To use an XML enumeration type *E* in another XML definition *D*,
 enclose the name of the file that defines *E* in an XML tag `import_enum_type`.
 As an example, you can revise the `Switch` Serializable
 definition shown above.
-Instead of defining `SwitchState` as an inline enumeration, you can use the 
+Instead of defining `SwitchState` as an inline enumeration, you can use the
 `SwitchState` XML enumeration type as follows:
 
 ```xml
@@ -155,11 +159,11 @@ Instead of defining `SwitchState` as an inline enumeration, you can use the
 ```
 
 Notice that the revised version (1) imports the enum type definition
-from the file `SwitchStateEnumAi.xml` and (2) uses the named
+from the file, `SwitchStateEnumAi.xml` and (2) uses the named
 type `SwitchState` as the type of member `state`.
 
-As another example, if you import the file `SwitchStateEnumAi.xml` into the 
-definition of a component *C*, then you can use the type `SwitchState` in the 
+As another example, if you import the file `SwitchStateEnumAi.xml` into the
+definition of a component *C*, then you can use the type `SwitchState` in the
 telemetry dictionary for *C*.
 When a value of type `SwitchState` is emitted as telemetry, the GDS
 will display it symbolically as `OFF` or `ON`.
@@ -184,8 +188,21 @@ with attributes *enum_attributes* and children *enum_children*.
 of the enumeration type.
 The namespace consists of one or more identifiers separated by `::`.
 
+* An optional attribute `default` giving the default value
+of the enumeration. This value must match the name attribute of 
+one of the item definitions within the enumeration (see below). 
+
+* An optional attribute `serialize_type` giving the numeric type
+of the enumeration when serializing.
+
 If the attribute `namespace` is missing, then the type is
 placed in the global namespace.
+
+If the attribute `default` is missing, then the value of the
+enumeration is set to 0.
+
+If the attribute `serialize_type` is missing, then the serialization type is
+set to FwEnumStoreType.
 
 _Examples:_ Here is an XML enumeration `E` in the global namespace:
 
@@ -195,7 +212,18 @@ Here is an XML enumeration `E` in the namespace `A::B`:
 
 `<enum name="E" namespace="A::B">` ... `</enum>`
 
-**Enum children:** 
+Here is an XML enumeration `E` in the global namespace with default value Item2 
+(Item2 is assumed to be the name attribute of one of the item definitions in the enum):
+
+`<enum name="E" default="Item2">` ... `</enum>`
+
+
+Here is an XML enumeration `E` in the global namespace with serialization type
+U64:
+
+`<enum name="E" serialize_type="U64">` ... `</enum>`
+
+**Enum children:**
 *enum_children* consists of the following, in any order:
 
 * An optional node `comment` containing comment text.
@@ -223,7 +251,7 @@ the previous constant).
 
 * An optional attribute `comment` giving comment text.
 The text becomes a comment in the generated C++ code.
-It is attached to the enumerated constant definition. 
+It is attached to the enumerated constant definition.
 
 _Examples:_ Here is an enumerated constant with a name only:
 
@@ -237,7 +265,7 @@ Here is an enumerated constant with a name, value, and comment:
 
 #### Motivation
 
-As discussed above, a member of a Serializable type can be an array of elements 
+As discussed above, a member of a Serializable type can be an array of elements
 of some other type.
 For example, you can create a file `ACSTelemetrySerializable.xml` containing
 this specification:
@@ -257,7 +285,7 @@ with the following members:
 
 * A member `attitudeError` of type `F32`.
 
-* A member `wheelSpeeds` whose type is an array of three values, each of type 
+* A member `wheelSpeeds` whose type is an array of three values, each of type
   `U32`.
 
 Alternatively, you can specify a named array type *A* in a separate
@@ -267,10 +295,10 @@ Then you can do the following:
 1. Generate a C++ representation of *A* that you can include in C++
 files and use on its own.
 
-2. Use the XML representation of *A* in Serializable XML types, in other Array 
+2. Use the XML representation of *A* in Serializable XML types, in other Array
 XML types, in port arguments, in telemetry channels, and in event arguments.
 
-As an example, you can create a file `WheelSpeedsArrayAi.xml` that specifies an 
+As an example, you can create a file `WheelSpeedsArrayAi.xml` that specifies an
 array of three `U32` values, like this:
 
 ```xml
@@ -289,15 +317,15 @@ array of three `U32` values, like this:
 By running the code generator on this file, you can generate C++
 files `WheelSpeedsAc.hpp` and `WheelSpeedsAc.cpp`
 that define a C++ class `WheelSpeeds` representing this type.
-Anywhere that you include `WheelSpeedsEnumAc.hpp` in your C++ code, you can 
+Anywhere that you include `WheelSpeedsEnumAc.hpp` in your C++ code, you can
 use the class `WheelSpeeds`.
 If you import `WheelSpeedsArrayAi.xml` into another XML definition,
 then you can use the type `WheelSpeeds` there.
 
 To use an XML array type *A* in another XML definition *D*,
-enclose the name of the file that defines *A* in an XML tag 
+enclose the name of the file that defines *A* in an XML tag
 `import_array_type`.
-As an example, you can revise the definition of the Serializable type 
+As an example, you can revise the definition of the Serializable type
 `ACSTelemetry` as follows:
 
 ```xml
@@ -321,8 +349,8 @@ an array of three `U32` values, here it is given type `WheelSpeeds`,
 which is defined in a separate XML specification as an array
 of three `U32` values.
 
-As another example, if you import file `WheelSpeedsArrayAi.xml` into the 
-definition of a component *C*, then you can use the type `WheelSpeeds` in the 
+As another example, if you import file `WheelSpeedsArrayAi.xml` into the
+definition of a component *C*, then you can use the type `WheelSpeeds` in the
 telemetry dictionary for *C*.
 When a value of type `WheelSpeeds` is emitted as telemetry, the GDS
 will display it as an array of three values.
@@ -376,10 +404,10 @@ Here is an XML array `A` in the namespace `B::C`:
    * `<import_serializable_type>` *serializable_xml_file* `</import_serializable_type>`
       for importing XML-specified serializable types.
 
-   * `<import_enum_type>` *enum_xml_file* `</import_enum_type>` for importing 
+   * `<import_enum_type>` *enum_xml_file* `</import_enum_type>` for importing
      XML-specified enum types.
 
-   * `<import_array_type>` *array_xml_file* `</import_array_type>` for 
+   * `<import_array_type>` *array_xml_file* `</import_array_type>` for
      importing XML-specified array types.
 
 * A node `format` providing a single format string to be applied to each array element.
@@ -387,12 +415,12 @@ Here is an XML array `A` in the namespace `B::C`:
   `<format>` *format_string* `</format>`
 
   *format_string* must contain a single conversion specifier starting with `%`.
-  The conversion specifier must be legal both for C and C++ `printf` and for 
+  The conversion specifier must be legal both for C and C++ `printf` and for
   Python, considering the array element type.
-  For example, if the array element type is `U32`, then `<format>%u</format>` 
+  For example, if the array element type is `U32`, then `<format>%u</format>`
   is a valid
   format specifier. So is `<format>%u seconds</time>`.
-  `<format>%s</format>` is not a legal format specifier in this case, because 
+  `<format>%s</format>` is not a legal format specifier in this case, because
   the string format `%s`
   is not valid for type `U32`.
 
@@ -400,7 +428,7 @@ Here is an XML array `A` in the namespace `B::C`:
 
   `<type` *size_attribute_opt* `>` *type* `</type>`
 
-  *size_attribute_opt* is an optional attribute `size` specifying a decimal 
+  *size_attribute_opt* is an optional attribute `size` specifying a decimal
   integer size.
   The `size` attribute is valid only if the element type is `string`,
   and it is required in this case.
@@ -532,10 +560,10 @@ specification.
 | comment                    |           | Used for a comment describing the port. Is placed as a Doxygen-compatible tag in the class declaration.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | args                       |           | Optional. Starts the region of the declaration where port arguments are specified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | arg                        |           | Defines an argument to the port method.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| arg                        | type      | The type of the argument. Should be a built-in type, ENUM, string, an XML-specified type, or a user-written serializable type. A string type should be used if a text string is the argument. If the type is serial, the port is an untyped serial port that can be connected to any typed port for the purpose of serializing the call. See the Hub pattern in the architectural description document for a usage.                                                                                                                                                                                                                                                                             |
+| arg                        | type      | The type of the argument. Should be a built-in type, ENUM, string, an XML-specified type, or a user-written serializable type. A string type should be used if a text string is the argument. If the type is serial, the port is an untyped serial port that can be connected to any typed port for the purpose of serializing the call. See the Hub pattern in the architectural description document for usage.                                                                                                                                                                                                                                                                             |
 | arg                        | name      | Defines the argument name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | arg                        | size      | Specifies the size of the argument if it is of type string.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| arg                        | pass\_by  | Optional. Specifies if the argument should be passed by reference or pointer. Default is to pass by value. Values can be VALUE, POINTER, or REFERENCE. This is provided as an optimization to avoid unnecessary copies. When arguments to ports with references are detected by components, the argument is serialized in the same way as an argument that is passed by value. If it is passed by pointer, the pointer value is copied and not the contents of the type instance pointed to by the pointer. This carries the usual responsibility for understanding the scope and lifetime of the memory behind the pointer, as the pointer value may be held by another component past the duration of the port call. |
+| arg                        | pass\_by  | Optional. Specifies how the argument should be passed to a handler function. Values can be `pointer` or `reference`. For a synchronous port handler, the default behavior (with no `pass_by` attribute) is to pass by value for primitive values, otherwise by const reference. `pass_by="pointer"` causes a pointer to the data to be passed. `pass_by="reference"` causes a mutable reference to be passed. For an asynchronous port handler, `pass_by="pointer"` causes a pointer to the data to be passed. Otherwise, the data itself is serialized, copied into and out of the queue, and deserialized. The use of pointers and references carries the usual responsibility for understanding the scope and lifetime of the memory behind the pointer, as the pointer or reference may be held by another component past the duration of the port call. |
 | enum                       |           | Specifies an enumeration when the argument type=ENUM.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | enum                       | name      | Enumeration type name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | item                       |           | Specifies a member of the enumeration.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -587,8 +615,8 @@ specification.
 | component                  |                 | The outermost tag that indicates a component is being defined.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |                                                                                                                                                                        |
 | component                  | namespace       | The C++ namespace for the component class (optional).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                                                                                                        |
 | component                  | name            | The class name for the component.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |                                                                                                                                                                        |
-| component                  | kind            | The type of component. Can be passive, queued, or active. A passive component has no thread or queue. A queued component has a message queue, but no thread. A component on another thread must invoke a synchronous input interface (see below) to get messages from the queue. An active component has a thread, and unloads its message queue as the thread is scheduled and as port invocation messages arrive.                                                                                                                                                             |                                                                                                                                                                        |
-| component                  | modeler         | When the attribute is “true,” the autocoder does not automatically create ports for commands, telemetry, events, and parameters. If it is “true,” those ports must be declared in the port section with the “role” attribute. See description below.                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                        |
+| component                  | kind            | The type of component. Can be passive, queued, or active. A passive component has no thread or queue. A queued component has a message queue, but no thread. A component on another thread must invoke a synchronous input interface (see below) to get messages from the queue. An active component has a thread and unloads its message queue as the thread is scheduled and as port invocation messages arrive.                                                                                                                                                             |                                                                                                                                                                        |
+| component                  | modeler         | When the attribute is “true,” the autocoder does not automatically create ports for commands, telemetry, events, and parameters. If it is “true,” those ports must be declared in the port section with the “role” attribute. See the description below.                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                        |
 | import\_dictionary         |                 | Imports a ground dictionary defined outside the component XML that conforms to the command, telemetry, event, and parameter entries below. This allows external tools written by projects to generate dictionaries.                                                                                                                                                                                                                                                                                                                                                             |                                                                                                                                                                        |
 | import\_port\_type         |                 | Imports an XML definition of a port type used by the component.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                                        |
 | import\_serializable\_type |                 | Imports an XML definition of a serializable type for use in the component interfaces.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                                                                                                        |
@@ -605,7 +633,7 @@ specification.
 |                            |                 | guarded\_input                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Invokes the derived class methods after locking a mutex shared by all guarded ports and commands.                                                                      |
 |                            |                 | async\_input                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Creates a message with the serialized arguments of the port call. When the message is dequeued, the arguments are deserialized and the derived class method is called. |
 |                            |                 | output                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Port is an output port that is invoked from the logic in the derived class.                                                                                            |
-| port                       | priority        | The priority of the invocation. Only used for asynchronous ports, and specifies the priority of the message in the underlying message queue if priorities are supported by the target OS. Range is OS dependent.                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                        |
+| port                       | priority        | The priority of the invocation. Only used for asynchronous ports, and specifies the priority of the message in the underlying message queue if priorities are supported by the target OS. Range is OS-dependent.                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                        |
 | port                       | max\_number     | Specifies the number of ports of this type. This allows multiple callers to the same type of port if knowing the source is necessary. Can be specified as an Fw/Cfg/AcConstants.ini file $VARIABLE value.                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                        |
 | port                       | full            | Specifies the behavior for async ports when the message queue is full. One of *drop*, *block*, or *assert*, where *assert* is the default.                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                        |
 | port                       | role            | Specifies the role of the port when the modeler=true.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                                                                                                        |
@@ -651,7 +679,7 @@ specification.
 | item                       | comment         | A comment about the member. Becomes a Doxygen tag.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                                                                                        |
 | parameters                 |                 | Optional. Specifies the section that defines parameters for the component.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                        |
 | parameters                 | parameter\_base | Defines the base value for the parameter IDs. If this is specified, all parameter IDs will be added to this value. If it is missing, parameter IDs will be absolute. This tag can also have a variable of the form $VARIABLE referring to values in Fw/Cfg/AcConstants.ini.                                                                                                                                                                                                                                                                                                    |                                                                                                                                                                        |
-| parameters                 | opcode\_base    | Defines the base value for the opcodes in the parameter set and save commands. If this is specified, all opcodes will be added to this value. If it is missing, opcodes will be absolute. This tag can also have a variable of the form $VARIABLE referring to values in Fw/Cfg/AcConstants.ini.                                                                                                                                                                                                                                                                               |                                                                                                                                                                        |
+| parameters                 | opcode\_base    | Defines the base value for the opcodes in the parameter set and saves commands. If this is specified, all opcodes will be added to this value. If it is missing, opcodes will be absolute. This tag can also have a variable of the form $VARIABLE referring to values in Fw/Cfg/AcConstants.ini.                                                                                                                                                                                                                                                                               |                                                                                                                                                                        |
 | parameter                  |                 | Starts the definition for a parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                        |
 | parameter                  | id              | Specifies a numeric value that represents the parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |                                                                                                                                                                        |
 | parameter                  | name            | Specifies the name of the parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                        |
@@ -675,22 +703,23 @@ specification.
 | event                      | severity        | Specifies the severity of the event. The values can be:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                        |
 |                            |                 | **Value**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | **Meaning**                                                                                                                                                            |
 |                            |                 | DIAGNOSTIC                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Software debugging information. Meant for development.                                                                                                                 |
-|                            |                 | ACTVITY\_LO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Low-priority events related to software execution.                                                                                                                     |
-|                            |                 | ACTVITY\_HI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Higher priority events related to software execution.                                                                                                                  |
-|                            |                 | COMMAND                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Events related to command execution. Should be reserved for command dispatcher and sequencer.                                                                          |
+|                            |                 | ACTIVITY\_LO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Low-priority events related to software execution.                                                                                                                     |
+|                            |                 | ACTIVITY\_HI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Higher priority events related to software execution.                                                                                                                  |
+|                            |                 | COMMAND                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Events related to command execution. Should be reserved for the command dispatcher and sequencer.                                                                          |
 |                            |                 | WARNING\_LO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Error conditions that are of low importance.                                                                                                                           |
 |                            |                 | WARNING\_LO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Error conditions that are of critical importance.                                                                                                                      |
 |                            |                 | FATAL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | An error condition was encountered that the software cannot recover from.                                                                                              |
 | event                      | format\_string  | A C-style format string to print a message corresponding to the event. Used for displaying the event in the command/data handling software as well as the optional text logging in the software. (See Section 9.12.)                                                                                                                                                                                                                                                                                                                                                            |                                                                                                                                                                        |
+| event                      | throttle        | Maximum number of events that will be issued before more are prevented. Once the limit has been reached, the throttle must be cleared before more can be issued. Non-negative integer.                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                        |
 | comment                    |                 | A comment describing the event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |                                                                                                                                                                        |
 | args                       |                 | Starts the region of the declaration where event arguments are specified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |                                                                                                                                                                        |
 | arg                        |                 | Defines an argument in the event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |                                                                                                                                                                        |
 | arg                        | type            | The type of the argument. Should be a built-in type, ENUM, string, or an XML-specified serializable. A string type should be used if a text string is the argument.                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                        |
 | arg                        | name            | Defines the argument name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                                                                                                        |
 | arg                        | size            | Specifies the size of the argument if it is of type string.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |                                                                                                                                                                        |
-| internal\_interfaces       |                 | Optional. Specifies an internal interface for the component. Internal interfaces are functions that can be called internally from implementation code. These functions will dispatch a message in the same fashion that asynchronous ports and commands do. The developer implements a handler in the same way, and that handler is called on the thread of an active or queued component. Internal interfaces cannot be specified for a passive component since there is not message queue. A typical use for an internal interface would be for an interrupt service routine. |                                                                                                                                                                        |
+| internal\_interfaces       |                 | Optional. Specifies an internal interface for the component. Internal interfaces are functions that can be called internally from implementation code. These functions will dispatch a message in the same fashion that asynchronous ports and commands do. The developer implements a handler in the same way, and that handler is called on the thread of an active or queued component. Internal interfaces cannot be specified for a passive component since there is no message queue. A typical use for an internal interface would be for an interrupt service routine. |                                                                                                                                                                        |
 | internal\_interface        |                 | Specifies an internal interface call.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                                                                                                        |
-| internal\_interface        | priority        | Sets internal interface message priority if message is asynchronous, ignored otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                        |
+| internal\_interface        | priority        | Sets internal interface message priority if the message is asynchronous, ignored otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                        |
 | internal\_interface        | full            | Specifies the behavior for internal interfaces when the message queue is full. One of *drop*, *block*, or *assert*, where *assert* is the default.                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                                                                                        |
 | comment                    |                 | A comment describing the interface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |                                                                                                                                                                        |
 | args                       |                 | Starts the region of the declaration where interface arguments are specified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |                                                                                                                                                                        |
@@ -804,11 +833,11 @@ specification.
 | connection              | name             | Name of connection.                                                                                                                                                          |
 | source                  |                  | Defines the source of the connection.                                                                                                                                        |
 | source                  | component        | Defines source component. Must match an instance in instance section above.                                                                                                  |
-| source                  | port             | Defines source port on component.                                                                                                                                            |
+| source                  | port             | Defines the source port on the component.                                                                                                                                            |
 | source                  | type             | Source port type.                                                                                                                                                            |
 | source                  | num              | Source port number if multiple port instances.                                                                                                                               |
 | target                  | component        | Defines target component. Must match an instance in instance section above.                                                                                                  |
-| target                  | port             | Defines target port on component.                                                                                                                                            |
+| target                  | port             | Defines the target port on the component.                                                                                                                                            |
 | target                  | type             | Target port type.                                                                                                                                                            |
 | target                  | num              | Target port number if multiple port instances.                                                                                                                               |
 
@@ -822,7 +851,7 @@ in the connections.
 
 ### Constraints
 
-The XML specification for the component requires static declaration of
+The XML specification for the component requires a static declaration of
 component instances that can be referred to by their object name. If
 components are instantiated in other ways such as a heap, the manual
 method can be used.

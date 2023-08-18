@@ -1,4 +1,4 @@
-// ====================================================================== 
+// ======================================================================
 // \title  LockGuardTester.hpp
 // \author vwong
 // \brief  cpp file for LockGuard test harness implementation class
@@ -9,32 +9,31 @@
 //
 // ALL RIGHTS RESERVED. United States Government Sponsorship
 // acknowledged.
-// ====================================================================== 
+// ======================================================================
 
 #include "LockGuardTester.hpp"
-#include <time.h>
+#include <ctime>
 #include <Os/Task.hpp>
-#include <Fw/Types/EightyCharString.hpp>
 
 namespace Utils {
 
   // ----------------------------------------------------------------------
-  // Construction and destruction 
+  // Construction and destruction
   // ----------------------------------------------------------------------
 
   LockGuardTester ::
-    LockGuardTester(void)
+    LockGuardTester()
   {
   }
 
   LockGuardTester ::
-    ~LockGuardTester(void) 
+    ~LockGuardTester()
   {
-    
+
   }
 
   // ----------------------------------------------------------------------
-  // Tests 
+  // Tests
   // ----------------------------------------------------------------------
 
   struct TaskData {
@@ -43,23 +42,23 @@ namespace Utils {
   };
   void taskMethod(void* ptr)
   {
-    TaskData* data = (TaskData*)ptr;
+    TaskData* data = static_cast<TaskData*>(ptr);
     LockGuard guard(data->mutex);
     data->i++;
   }
 
   void LockGuardTester ::
-    testLocking(void) 
+    testLocking()
   {
     TaskData data;
     data.i = 0;
     Os::Task testTask;
     Os::Task::TaskStatus stat;
-    Fw::EightyCharString name("TestTask");
+    Os::TaskString name("TestTask");
 
     {
       LockGuard guard(data.mutex);
-      stat = testTask.start(name,12,100,10*1024,taskMethod,(void*) &data);
+      stat = testTask.start(name, taskMethod, &data);
       ASSERT_EQ(stat, Os::Task::TASK_OK);
       Os::Task::delay(100);
       ASSERT_EQ(data.i, 0);
@@ -69,16 +68,17 @@ namespace Utils {
       LockGuard guard(data.mutex);
       ASSERT_EQ(data.i, 1);
     }
-    stat = testTask.join(NULL);
+    stat = testTask.join(nullptr);
+    ASSERT_EQ(stat, Os::Task::TASK_OK);
   }
 
 
   // ----------------------------------------------------------------------
-  // Helper methods 
+  // Helper methods
   // ----------------------------------------------------------------------
 
   void LockGuardTester ::
-    initComponents(void) 
+    initComponents()
   {
   }
 

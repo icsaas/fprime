@@ -6,7 +6,7 @@
  *
  * GroundInterface rules:
  *
- * 1. On read-callback of sufficent parts, an uplink-out is produced
+ * 1. On read-callback of sufficient parts, an uplink-out is produced
  * 2. On schedIn a sufficient number of times, an uplink-out is produced
  * 3. On a call to Log, TextLog, downlink, a framed call to write is produced.
  *
@@ -15,8 +15,8 @@
 #ifndef FPRIME_SVC_GROUND_INTERFACE_HPP
 #define FPRIME_SVC_GROUND_INTERFACE_HPP
 
-#include <Fw/Types/BasicTypes.hpp>
-#include <Fw/Types/EightyCharString.hpp>
+#include <FpConfig.hpp>
+#include <Fw/Types/String.hpp>
 #include <Svc/GroundInterface/test/ut/Tester.hpp>
 #include <STest/STest/Rule/Rule.hpp>
 #include <STest/STest/Pick/Pick.hpp>
@@ -31,7 +31,7 @@ namespace Svc {
      */
     struct RandomizeRule : public STest::Rule<Tester> {
         // Constructor
-        RandomizeRule(const Fw::EightyCharString& name);
+        RandomizeRule(const Fw::String& name);
 
         // Always valid
         bool precondition(const Tester& state);
@@ -42,7 +42,7 @@ namespace Svc {
 
     struct DownlinkRule : public STest::Rule<Tester> {
         // Constructor
-        DownlinkRule(const Fw::EightyCharString& name);
+        DownlinkRule(const Fw::String& name);
 
         // Always valid
         bool precondition(const Tester& state);
@@ -53,7 +53,7 @@ namespace Svc {
 
     struct FileDownlinkRule : public STest::Rule<Tester> {
         // Constructor
-        FileDownlinkRule(const Fw::EightyCharString& name);
+        FileDownlinkRule(const Fw::String& name);
 
         // Always valid
         bool precondition(const Tester& state);
@@ -64,7 +64,7 @@ namespace Svc {
 
     struct SendAvailableRule : public STest::Rule<Tester> {
         // Constructor
-        SendAvailableRule(const Fw::EightyCharString& name);
+        SendAvailableRule(const Fw::String& name);
 
         // Always valid
         bool precondition(const Tester& state);

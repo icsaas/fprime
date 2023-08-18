@@ -1,9 +1,9 @@
 # ===============================================================================
 # NAME: Event.py
 #
-# DESCRIPTION:  This is a Eve t meta-model sort of class.  It is
+# DESCRIPTION:  This is a Event meta-model sort of class.  It is
 #               contained within a Component class as a list
-#               of Event intances and is visited by the code
+#               of Event instances and is visited by the code
 #               generators.
 #
 # USAGE:
@@ -21,7 +21,7 @@
 import logging
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 
 #

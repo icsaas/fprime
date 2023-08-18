@@ -25,7 +25,7 @@ from fprime_ac.generators.visitors import AbstractVisitor
 
 # from fprime_ac.utils import DiffAndRename
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
@@ -35,8 +35,7 @@ from fprime_ac.utils import ConfigManager, DictTypeConverter
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.channels import ChannelHeader
-    from fprime_ac.generators.templates.channels import ChannelBody
+    from fprime_ac.generators.templates.channels import ChannelBody, ChannelHeader
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -77,7 +76,7 @@ class InstanceChannelVisitor(AbstractVisitor.AbstractVisitor):
         """
         Wrapper to write tmpl to files desc.
         """
-        DEBUG.debug("ChannelVisitor:%s" % visit_str)
+        DEBUG.debug(f"ChannelVisitor:{visit_str}")
         DEBUG.debug("===================================")
         DEBUG.debug(c)
         fp.writelines(c.__str__())
@@ -86,7 +85,7 @@ class InstanceChannelVisitor(AbstractVisitor.AbstractVisitor):
     def DictStartVisit(self, obj, topology_model):
         """
         Defined to generate files for generated code products.
-        @parms obj: the instance of the channel model to visit.
+        @param obj: the instance of the channel model to visit.
         """
 
         # Build filename here...
@@ -126,8 +125,6 @@ class InstanceChannelVisitor(AbstractVisitor.AbstractVisitor):
             pyfile = "{}/{}.py".format(output_dir, fname)
             DEBUG.info("Open file: {}".format(pyfile))
             fd = open(pyfile, "w")
-            if fd is None:
-                raise Exception("Could not open {} file.".format(pyfile))
             DEBUG.info("Completed {} open".format(pyfile))
             self.__fp[fname] = fd
 
@@ -147,7 +144,7 @@ class InstanceChannelVisitor(AbstractVisitor.AbstractVisitor):
     def DictBodyVisit(self, obj, topology_model):
         """
         Defined to generate the body of the  Python channel class
-        @parms obj: the instance of the channel model to operation on.
+        @param obj: the instance of the channel model to operation on.
         """
         try:
             instance_obj_list = topology_model.get_base_id_dict()[
@@ -177,7 +174,7 @@ class InstanceChannelVisitor(AbstractVisitor.AbstractVisitor):
             c.name = fname
 
             if len(obj.get_ids()) > 1:
-                raise Exception(
+                raise ValueError(
                     "There is more than one event id when creating dictionaries. Check xml of {} or see if multiple explicit IDs exist in the AcConstants.ini file".format(
                         fname
                     )

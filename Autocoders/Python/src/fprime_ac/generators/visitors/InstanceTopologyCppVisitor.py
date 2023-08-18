@@ -24,7 +24,7 @@ from fprime_ac.generators.visitors import AbstractVisitor
 from fprime_ac.models import ModelParser
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
@@ -34,8 +34,10 @@ from fprime_ac.utils import ConfigManager
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.topology import includes1TopologyCpp
-    from fprime_ac.generators.templates.topology import publicInstanceTopologyCpp
+    from fprime_ac.generators.templates.topology import (
+        includes1TopologyCpp,
+        publicInstanceTopologyCpp,
+    )
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -89,7 +91,7 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms obj: the instance of the component model to visit.
+        @param obj: the instance of the component model to visit.
         """
         # Build filename here...
         if len(obj.get_comp_list()) > 0:
@@ -123,11 +125,9 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
             else:
                 self.partition = None
             #
-            # Open file for writting here...
+            # Open file for writing here...
             DEBUG.info("Open file: %s" % filename)
             self.__fp = open(filename, "w")
-            if self.__fp is None:
-                raise Exception("Could not open %s file.") % filename
             DEBUG.info("Completed")
         else:
             PRINT.info("ERROR: NO COMPONENTS FOUND IN TOPOLOGY XML FILE...")
@@ -142,7 +142,7 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Port types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         relative_path = self.relativePath()
         #
@@ -228,20 +228,20 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate internal includes within a file.
         Usually used for data type includes and system includes.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def namespaceVisit(self, obj):
         """
         Defined to generate namespace code within a file.
         Also any pre-condition code is generated.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = publicInstanceTopologyCpp.publicInstanceTopologyCpp()
         # Added hack for ARINC demo...
@@ -302,7 +302,6 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
         # Generate Component Declarations
         for component in component_list:
             # Partition instance names
-            n = component["name"]  # Save name
             if part is None:
                 pass
             else:
@@ -315,7 +314,7 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
                 )
                 c.component_declarations.append(declaration_template)
             else:
-                pass  ## If objects are generated as instances the object was instansiated in includes
+                pass  ## If objects are generated as instances the object was instantiated in includes
         #
 
         #
@@ -336,7 +335,7 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
         #
 
         #
-        # Generate Component Initalizations
+        # Generate Component Initializations
         for component in component_list:
             if obj.is_ptr:
                 init_template = """{name}_ptr->init(10);""".format(**component)
@@ -382,13 +381,9 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
             startup_template = ""
             if component["kind"] == "active":
                 if obj.is_ptr:
-                    startup_template = (
-                        """{name}_ptr->start(0, 100, 10 * 1024);""".format(**component)
-                    )
+                    startup_template = """{name}_ptr->start();""".format(**component)
                 else:
-                    startup_template = """{name}.start(0, 100, 10 * 1024);""".format(
-                        **component
-                    )
+                    startup_template = """{name}.start();""".format(**component)
                 c.component_startups.append(startup_template)
         #
 
@@ -409,13 +404,13 @@ class InstanceTopologyCppVisitor(AbstractVisitor.AbstractVisitor):
     def protectedVisit(self, obj):
         """
         Defined to generate protected stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def privateVisit(self, obj):
         """
         Defined to generate private stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def finishSourceFilesVisit(self, obj):

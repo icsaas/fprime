@@ -2,9 +2,9 @@
 // Main.cpp 
 // ----------------------------------------------------------------------
 
-#include <string.h>
-#include <stdio.h>
-#include <Fw/Types/BasicTypes.hpp>
+#include <cstring>
+#include <cstdio>
+#include <FpConfig.hpp>
 #include <Fw/Types/Assert.hpp>
 #include <Fw/Types/MallocAllocator.hpp>
 #include <Fw/SerializableFile/SerializableFile.hpp>
@@ -46,14 +46,14 @@ int main(int argc, char **argv) {
 
   // Test saving to impossible file:
   printf("Testing bad save... ");
-  status = configFile.save("this/file/doesnt/exist", config);
+  status = configFile.save("this/file/does/not/exist", config);
   FW_ASSERT(SerializableFile::FILE_OPEN_ERROR == status, status);
   printf("Passed\n");
 
-  // Test reading from nonexistant file:
+  // Test reading from nonexistent file:
   printf("Testing bad load... ");
   Test config3;
-  status = configFile.load("thisfiledoesnexist.ser", config3);
+  status = configFile.load("thisfiledoesnotexist.ser", config3);
   FW_ASSERT(SerializableFile::FILE_OPEN_ERROR == status, status);
   printf("Passed\n");
 

@@ -8,8 +8,8 @@
  *
  * 1. Serialize into CircularBuffer with sufficient space should work.
  * 2. Serialize into CircularBuffer without sufficient space should error.
- * 3. Peeking into CicularBuffer with data should work (all variants).
- * 4. Peeking into CicularBuffer without data should error (all variants).
+ * 3. Peeking into CircularBuffer with data should work (all variants).
+ * 4. Peeking into CircularBuffer without data should error (all variants).
  * 5. Rotations should increase space when there is enough data.
  * 6. Rotations should error when there is not enough data.
  * 7. A rule exists to help randomize items.
@@ -19,8 +19,8 @@
 #ifndef FPRIME_GROUNDINTERFACERULES_HPP
 #define FPRIME_GROUNDINTERFACERULES_HPP
 
-#include <Fw/Types/BasicTypes.hpp>
-#include <Fw/Types/EightyCharString.hpp>
+#include <FpConfig.hpp>
+#include <Fw/Types/String.hpp>
 #include <Utils/Types/test/ut/CircularBuffer/CircularState.hpp>
 #include <STest/STest/Rule/Rule.hpp>
 #include <STest/STest/Pick/Pick.hpp>
@@ -35,7 +35,7 @@ namespace Types {
      */
     struct RandomizeRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        RandomizeRule(const Fw::EightyCharString& name);
+        RandomizeRule(const char *const name);
 
         // Always valid
         bool precondition(const MockTypes::CircularState& state);
@@ -51,7 +51,7 @@ namespace Types {
      */
     struct SerializeOkRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        SerializeOkRule(const Fw::EightyCharString& name);
+        SerializeOkRule(const char *const name);
 
         // Valid precondition for when the buffer should accept data
         bool precondition(const MockTypes::CircularState& state);
@@ -67,7 +67,7 @@ namespace Types {
      */
     struct SerializeOverflowRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        SerializeOverflowRule(const Fw::EightyCharString& name);
+        SerializeOverflowRule(const char *const name);
 
         // Valid precondition for when the buffer should reject data
         bool precondition(const MockTypes::CircularState& state);
@@ -83,9 +83,9 @@ namespace Types {
      */
     struct PeekOkRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        PeekOkRule(const Fw::EightyCharString& name);
+        PeekOkRule(const char *const name);
 
-        // Peek ok available for when buffer size - remaining size  - 1 <= peek size
+        // Peek ok available for when buffer size - remaining size <= peek size
         bool precondition(const MockTypes::CircularState& state);
 
         // Action that tests the buffer's ability to peek
@@ -99,9 +99,9 @@ namespace Types {
      */
     struct PeekBadRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        PeekBadRule(const Fw::EightyCharString& name);
+        PeekBadRule(const char *const name);
 
-        // Peek bad available for when buffer size - remaining size  - 1 > peek size
+        // Peek bad available for when buffer size - remaining size > peek size
         bool precondition(const MockTypes::CircularState& state);
 
         // Action that tests the buffer's ability to peek with a fail
@@ -115,7 +115,7 @@ namespace Types {
      */
     struct RotateOkRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        RotateOkRule(const Fw::EightyCharString& name);
+        RotateOkRule(const char *const name);
 
         // Rotate is ok when there is more data then rotational size
         bool precondition(const MockTypes::CircularState& state);
@@ -131,7 +131,7 @@ namespace Types {
      */
     struct RotateBadRule : public STest::Rule<MockTypes::CircularState> {
         // Constructor
-        RotateBadRule(const Fw::EightyCharString& name);
+        RotateBadRule(const char *const name);
 
         // Rotate is bad when there is less data then rotational size
         bool precondition(const MockTypes::CircularState& state);

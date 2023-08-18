@@ -20,11 +20,7 @@ namespace Svc {
 
             void init(NATIVE_INT_TYPE instance = 0);
 
-            void runNominalReadWrite(void);
-
-        private:
-            Svc::PolyDbImpl& m_impl;
-
+            void runNominalReadWrite();
     };
 
 } /* namespace Svc */

@@ -24,7 +24,7 @@ def dumpAttrs(obj, log=None, loglvl=logging.DEBUG):
         loglvl=loglvl,
         showDoc=False,
         showMethods=False,
-        showAtributes=True,
+        showAttributes=True,
     )
 
 
@@ -37,14 +37,14 @@ def dumpObj(
     loglvl=logging.DEBUG,
     showDoc=True,
     showMethods=True,
-    showAtributes=True,
+    showAttributes=True,
 ):
     """
     Print a nicely formatted overview of an object.
 
     By default, output goes to stdout via print. However, if a
     logging object is passed in as the keyword argument, then
-    the output will be put to the loggging object. The default
+    the output will be put to the logging object. The default
     logging message level is DEBUG, but this can be changed to any
     level using the keyword argument 'loglvl'.  For example:
     DumpObj.dumpObj(someObject, logging.getLogger('output'), logging.INFO)
@@ -112,11 +112,9 @@ def dumpObj(
             objdoc = attr
         elif slot == "__module__":
             objmodule = attr
-        elif isinstance(attr, types.BuiltinMethodType) or isinstance(
-            attr, MethodWrapperType
-        ):
+        elif isinstance(attr, (types.BuiltinMethodType, MethodWrapperType)):
             builtins.append(slot)
-        elif isinstance(attr, types.MethodType) or isinstance(attr, types.FunctionType):
+        elif isinstance(attr, (types.MethodType, types.FunctionType)):
             methods.append((slot, attr))
         elif isinstance(attr, type):
             classes.append((slot, attr))
@@ -228,7 +226,7 @@ def dumpObj(
             else:
                 print(prettyString)
 
-    if showAtributes:
+    if showAttributes:
         # Attributes
         if attrs:
             if log:
@@ -248,7 +246,7 @@ def dumpObj(
 
 
 def prettyPrintCols(strings, widths, split=" "):
-    """Pretty prints text in colums, with each string breaking at
+    """Pretty prints text in columns, with each string breaking at
     split according to prettyPrint.  margins gives the corresponding
     right breaking point."""
 
@@ -284,7 +282,7 @@ def prettyPrint(string, maxlen=75, split=" "):
     lines = []
     oldeol = 0
     eol = 0
-    while not (eol == -1 or eol == len(string) - 1):
+    while not eol in (-1, len(string) - 1):
         eol = string.rfind(split, oldeol, oldeol + maxlen + len(split))
         lines.append(string[oldeol:eol])
         oldeol = eol + len(split)

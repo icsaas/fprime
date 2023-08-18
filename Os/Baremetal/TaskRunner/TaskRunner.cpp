@@ -5,7 +5,7 @@
  *      Author: lestarch
  */
 #include <Fw/Types/Assert.hpp>
-#include <Fw/Types/BasicTypes.hpp>
+#include <FpConfig.hpp>
 #include <Os/Baremetal/TaskRunner/TaskRunner.hpp>
 #include <Os/Baremetal/TaskRunner/BareTaskHandle.hpp>
 namespace Os {
@@ -20,20 +20,13 @@ TaskRunner::TaskRunner() :
     Task::registerTaskRegistry(this);
 }
 TaskRunner::~TaskRunner() {}
-/**
- * Add a task to the registry. These tasks will be run on a bare-metal
- * loop. The function used in this task may be overridden.
- * \param Task* task: task to be added
- */
+
 void TaskRunner::addTask(Task* task) {
     FW_ASSERT(m_index < TASK_REGISTRY_CAP);
     this->m_task_table[m_index] = task;
     m_index++;
 }
-/**
- * Remove a task to the registry. These tasks will no-longer be run.
- * \param Task* task: task to be removed
- */
+
 void TaskRunner::removeTask(Task* task) {
     bool found = false;
     //Squash that existing task
@@ -49,19 +42,15 @@ void TaskRunner::removeTask(Task* task) {
         }
         //If the last element, mark NULL
         else {
-            this->m_task_table[i] = NULL;
+            this->m_task_table[i] = nullptr;
         }
     }
 }
-/**
- * Stop the task runner
- */
+
 void TaskRunner::stop() {
     m_cont = false;
 }
-/**
- * Run once through list of tasks
- */
+
 void TaskRunner::run() {
     U32 i = 0;
     if (!m_cont) {
@@ -70,12 +59,12 @@ void TaskRunner::run() {
     //Loop through full table
     for (i = 0; i < TASK_REGISTRY_CAP; i++) {
         //Break at end of table
-        if (m_task_table[i] == NULL) {
+        if (m_task_table[i] == nullptr) {
             break;
         }
         //Get bare task or break
         BareTaskHandle* handle = reinterpret_cast<BareTaskHandle*>(m_task_table[i]->getRawHandle());
-        if (handle == NULL || handle->m_routine == NULL || !handle->m_enabled) {
+        if (handle == nullptr || handle->m_routine == nullptr || !handle->m_enabled) {
             continue;
         }
         //Run-it!

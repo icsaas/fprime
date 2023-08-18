@@ -3,7 +3,7 @@
 #
 # DESCRIPTION: The abstract generator defines the interface
 #                for each element or in this case
-#              portition of code to be generated.  We use
+#              portion of code to be generated.  We use
 #              the python __call__ method to make
 #              direct calls to generators.
 #
@@ -24,7 +24,7 @@
 import logging
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 
 #
@@ -57,7 +57,7 @@ class AbstractGenerator:
         Main execution point.
         Calls the accept method on each visitor to generate the code.
         """
-        raise Exception(
+        raise NotImplementedError(
             "AbstractGenerator.__call__() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -65,7 +65,7 @@ class AbstractGenerator:
         """
         Execute the visit call on this object.
         """
-        raise Exception(
+        raise NotImplementedError(
             "AbstractFace.accept.accept(v) - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -73,6 +73,6 @@ class AbstractGenerator:
         """
         Method to add the visitor to a list of visitors.
         """
-        raise Exception(
+        raise NotImplementedError(
             "AbstractFace.accept.addVisitor(v) - Implementation Error: you must supply your own concrete implementation."
         )

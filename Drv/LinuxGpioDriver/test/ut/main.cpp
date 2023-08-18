@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------
 
 #include "Tester.hpp"
-#include <stdlib.h>
+#include <cstdlib>
 
 // TEST(Test, NominalTlm) {
 //   Svc::Tester tester;
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     }
 
     Drv::Tester tester;
-    
+
     int gpio = atoi(argv[1]);
     int output = atoi(argv[2]);
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
         tester.testOutput(gpio,10);
     } else if (2 == output) {
         printf("Testing GPIO %d interrupts\n",gpio);
-        tester.testInterrrupt(gpio,10);
+        tester.testInterrupt(gpio,10);
     } else {
         usage(argv[0]);
     }

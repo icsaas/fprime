@@ -29,10 +29,10 @@ def compare_except_lines(file1, file2, linesOkToBeDifferent):
     where ndiffs is 0 means files match.
     """
     missingFile = False
-    if os.path.exists(file1) == False:
+    if not os.path.exists(file1):
         PRINT("compare_and_rename: original file missing: %s" % file1)
         missingFile = True
-    if os.path.exists(file2) == False:
+    if not os.path.exists(file2):
         PRINT("compare_and_rename: new file missing: %s" % file2)
         missingFile = True
     if missingFile:
@@ -78,7 +78,7 @@ def fileTimeTag(filename):
 
 def compareAndRename(filename, dated_files_enable=False, except_lines_list=[]):
     """
-    Compare filename with filename.new and if different overwright filename
+    Compare filename with filename.new and if different overwrite filename
     with filename.new. Do file diff on all lines if except_lines_list is []
     otherwise ignore lines in list when doing compare.
 
@@ -106,7 +106,7 @@ def compareAndRename(filename, dated_files_enable=False, except_lines_list=[]):
     numDiffs = compare_except_lines(filename, filename_new, except_lines_list)
     if numDiffs > 0:
         # file has diffs so push .new file
-        if dated_files_enable == True:
+        if dated_files_enable:
             timeTag = fileTimeTag(filename)
             if os.path.exists(filename + timeTag):
                 os.remove(filename + timeTag)
@@ -119,7 +119,7 @@ def compareAndRename(filename, dated_files_enable=False, except_lines_list=[]):
         print("...replaced old with new %s" % filename)
     else:
         # file does not have diffs
-        if dated_files_enable == True:
+        if dated_files_enable:
             timeTag = fileTimeTag(filename)
             if os.path.exists(filename + ".new" + timeTag):
                 os.remove(filename + ".new" + timeTag)
@@ -184,7 +184,7 @@ def DiffAndRename(filename, dated_files_enable=True):
             print("... new %s did not differ from old file." % filename)
     else:
         if filesDiffer:
-            if dated_files_enable == True:
+            if dated_files_enable:
                 timeTag = fileTimeTag(filename)
                 if os.path.exists(filename + timeTag):
                     os.remove(filename + timeTag)
@@ -193,7 +193,7 @@ def DiffAndRename(filename, dated_files_enable=True):
             os.rename(filename + ".new", filename)
             print("... and replaced old with new %s" % filename)
         else:
-            if dated_files_enable == True:
+            if dated_files_enable:
                 timeTag = fileTimeTag(filename)
                 if os.path.exists(filename + ".new" + timeTag):
                     os.remove(filename + ".new" + timeTag)

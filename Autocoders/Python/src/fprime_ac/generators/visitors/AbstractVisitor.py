@@ -23,7 +23,7 @@ from fprime_ac.utils.buildroot import (
 )
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 
 #
@@ -65,9 +65,9 @@ class AbstractVisitor:
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.initFilesVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -75,7 +75,7 @@ class AbstractVisitor:
         """
         Defined to generate starting static code within files.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.startSourceFilesVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -83,9 +83,9 @@ class AbstractVisitor:
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Port types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.includesVisit1() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -93,9 +93,9 @@ class AbstractVisitor:
         """
         Defined to generate internal includes within a file.
         Usually used for data type includes and system includes.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.includesVisit2() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -103,36 +103,36 @@ class AbstractVisitor:
         """
         Defined to generate namespace code within a file.
         Also any pre-condition code is generated.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.namespaceVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.publicVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
     def protectedVisit(self, obj):
         """
         Defined to generate protected stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.protectedVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
     def privateVisit(self, obj):
         """
         Defined to generate private stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.privateVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -140,7 +140,7 @@ class AbstractVisitor:
         """
         Defined to generate ending static code within files.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# AbstractVisitor.endSourceFilesVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -148,7 +148,7 @@ class AbstractVisitor:
         """
         Defined to generate start of command Python class.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# DictStartVisit.startCommandVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -156,7 +156,7 @@ class AbstractVisitor:
         """
         Defined to generate header for Python command class.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# DictStartVisit.commandHeaderVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -164,7 +164,7 @@ class AbstractVisitor:
         """
         Defined to generate body for Python command class.
         """
-        raise Exception(
+        raise NotImplementedError(
             "# DictStartVisit.commandBodyVisit() - Implementation Error: you must supply your own concrete implementation."
         )
 
@@ -189,8 +189,7 @@ class AbstractVisitor:
             relative_path = build_root_relative_path(path)
         except BuildRootMissingException as bre:
             PRINT.info(
-                "ERROR: BUILD_ROOT and current execution path (%s) not consistent! %s"
-                % (path, str(bre))
+                f"ERROR: BUILD_ROOT and current execution path ({path}) not consistent! {str(bre)}"
             )
             sys.exit(-1)
         DEBUG.debug("Relative path: %s", relative_path)

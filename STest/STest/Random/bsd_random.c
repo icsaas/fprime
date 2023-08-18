@@ -39,7 +39,7 @@
  * then initialized to contain information for random number generation with
  * that much state information.  Good sizes for the amount of state
  * information are 32, 64, 128, and 256 bytes.  The state can be switched by
- * calling the setstate() routine with the same array as was initiallized
+ * calling the setstate() routine with the same array as was initialized
  * with initstate().  By default, the package runs with 128 bytes of state
  * information and generates far better random numbers than a linear
  * congruential generator.  If the amount of state information is less than
@@ -77,7 +77,7 @@
  * the 'arg_state' variable must be forced to begin on word boundaries.
  * This can be easily done by casting a long integer array to char *.
  * The overall logic has been left STRICTLY alone.  This software was
- * tested on both a VAX and Sun SpacsStation with exactly the same
+ * tested on both a VAX and Sun SparcStation with exactly the same
  * results.  The new version and the original give IDENTICAL results.
  * The new version is somewhat faster than the original.  As the
  * documentation says:  "By default, the package runs with 128 bytes of
@@ -157,7 +157,7 @@ static uint32_t randtbl[DEG_3 + 1] = {
 
 /*
  * fptr and rptr are two pointers into the state info, a front and a rear
- * pointer.  These two pointers are always rand_sep places aparts, as they
+ * pointer.  These two pointers are always rand_sep places apart, as they
  * cycle cyclically through the state information.  (Yes, this does mean we
  * could get away with just one pointer, but the code for random() is more
  * efficient this way).  The pointers are left positioned as they would be
@@ -190,12 +190,11 @@ static uint32_t *end_ptr = &randtbl[DEG_3 + 1];
 
 static inline uint32_t good_rand(int32_t) __attribute__((always_inline));
 
-static inline uint32_t good_rand (x)
-	int32_t x;
+static inline uint32_t good_rand (int32_t x)
 {
 /*
  * Compute x = (7^5 * x) mod (2^31 - 1)
- * wihout overflowing 31 bits:
+ * without overflowing 31 bits:
  *      (2^31 - 1) = 127773 * (7^5) + 2836
  * From "Random number generators: good ones are hard to find",
  * Park and Miller, Communications of the ACM, vol. 31, no. 10,
@@ -227,8 +226,7 @@ static inline uint32_t good_rand (x)
  * for default usage relies on values produced by this routine.
  */
 void
-bsd_srandom(x)
-	unsigned x;
+bsd_srandom(unsigned x)
 {
 	int i, lim;
 
@@ -270,11 +268,11 @@ bsd_srandom(x)
  * complain about mis-alignment, but you should disregard these messages.
  */
 char *
-bsd_initstate(seed, arg_state, n)
-	unsigned seed;		/* seed for R.N.G. */
-	char *arg_state;		/* pointer to state array */
-	size_t n;				/* # bytes of state info */
-{
+bsd_initstate(
+	unsigned seed,		/* seed for R.N.G. */
+	char *arg_state,		/* pointer to state array */
+	size_t n				/* # bytes of state info */
+) {
 	char *ostate = (char *)(&state[-1]);
 	uint32_t *int_arg_state = (uint32_t *)arg_state;
 
@@ -284,7 +282,7 @@ bsd_initstate(seed, arg_state, n)
 		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
 	if (n < BREAK_0) {
 		(void)fprintf(stderr,
-		    "random: not enough state (%ld bytes); ignored.\n", n);
+		    "random: not enough state (%zd bytes); ignored.\n", n);
 		return(0);
 	}
 	if (n < BREAK_1) {
@@ -338,9 +336,9 @@ bsd_initstate(seed, arg_state, n)
  * complain about mis-alignment, but you should disregard these messages.
  */
 char *
-bsd_setstate(arg_state)
-	const char *arg_state;		/* pointer to state array */
-{
+bsd_setstate(
+	const char *arg_state		/* pointer to state array */
+) {
 	uint32_t *new_state = (uint32_t *)arg_state;
 	uint32_t type = new_state[0] % MAX_TYPES;
 	uint32_t rear = new_state[0] / MAX_TYPES;
@@ -391,7 +389,7 @@ bsd_setstate(arg_state)
  * Returns a 31-bit random number.
  */
 long
-bsd_random()
+bsd_random(void)
 {
 	uint32_t i;
 	uint32_t *f, *r;

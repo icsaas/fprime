@@ -1,4 +1,4 @@
-// ====================================================================== 
+// ======================================================================
 // \title  GroundInterface.hpp
 // \author mstarch
 // \brief  cpp file for GroundInterface test harness implementation class
@@ -7,8 +7,8 @@
 // Copyright 2009-2015, by the California Institute of Technology.
 // ALL RIGHTS RESERVED.  United States Government Sponsorship
 // acknowledged.
-// 
-// ====================================================================== 
+//
+// ======================================================================
 
 #include "Tester.hpp"
 
@@ -19,25 +19,20 @@ U8 file_back_buffer[10240];
 
 namespace Svc {
   // ----------------------------------------------------------------------
-  // Construction and destruction 
+  // Construction and destruction
   // ----------------------------------------------------------------------
 
   Tester ::
-    Tester(void) : 
-#if FW_OBJECT_NAMES == 1
+    Tester() :
       GroundInterfaceGTestBase("Tester", MAX_HISTORY_SIZE),
       component("GroundInterface")
-#else
-      GroundInterfaceGTestBase(MAX_HISTORY_SIZE),
-      component()
-#endif
       ,
+      m_buffer(nullptr),
       m_uplink_type(1),
       m_uplink_used(30),
       m_uplink_size(sizeof(TOKEN_TYPE) * 3 + m_uplink_used),
       m_uplink_point(0),
-      m_uplink_com_type(Fw::ComPacket::FW_PACKET_COMMAND),
-      m_buffer(NULL)
+      m_uplink_com_type(Fw::ComPacket::FW_PACKET_COMMAND)
   {
     this->initComponents();
     this->connectPorts();
@@ -45,9 +40,9 @@ namespace Svc {
   }
 
   Tester ::
-    ~Tester(void) 
+    ~Tester()
   {
-    
+
   }
 
 
@@ -89,9 +84,9 @@ namespace Svc {
     )
   {
     this->pushFromPortEntry_fileUplinkBufferSendOut(fwBuffer);
-    for (U32 i = 0; i < fwBuffer.getsize(); i++) {
+    for (U32 i = 0; i < fwBuffer.getSize(); i++) {
         // File uplink strips type before outputting to FileUplink
-        ASSERT_EQ(reinterpret_cast<U8*>(fwBuffer.getdata())[i], m_uplink_data[i + HEADER_SIZE + sizeof(TOKEN_TYPE)]);
+        ASSERT_EQ(fwBuffer.getData()[i], m_uplink_data[i + HEADER_SIZE + sizeof(TOKEN_TYPE)]);
     }
   }
 
@@ -125,8 +120,8 @@ namespace Svc {
     )
   {
     this->pushFromPortEntry_fileUplinkBufferGet(size);
-    m_incoming_file_buffer.setsize(size);
-    m_incoming_file_buffer.setdata(reinterpret_cast<U64>(file_back_buffer));
+    m_incoming_file_buffer.setData(file_back_buffer);
+    m_incoming_file_buffer.setSize(size);
     return m_incoming_file_buffer;
   }
 
@@ -142,14 +137,14 @@ namespace Svc {
     TOKEN_TYPE size = 0;
     TOKEN_TYPE packet = 0;
     U32 end = 0;
-    Fw::ExternalSerializeBuffer buffer_wrapper(reinterpret_cast<U8*>(fwBuffer.getdata()), fwBuffer.getsize());
-    buffer_wrapper.setBuffLen(fwBuffer.getsize());
+    Fw::ExternalSerializeBuffer buffer_wrapper(fwBuffer.getData(), fwBuffer.getSize());
+    buffer_wrapper.setBuffLen(fwBuffer.getSize());
     // Check basic deserialization
     ASSERT_EQ(buffer_wrapper.deserialize(start), Fw::FW_SERIALIZE_OK);
     ASSERT_EQ(buffer_wrapper.deserialize(size), Fw::FW_SERIALIZE_OK);
     ASSERT_EQ(start, GroundInterfaceComponentImpl::START_WORD);
     ASSERT_EQ(size, m_size);
-    // Deserialize the packet type, if know. This handles the different paths for FilePackets and homoginized packets
+    // Deserialize the packet type, if know. This handles the different paths for FilePackets and homogenized packets
     if (m_packet != Fw::ComPacket::FW_PACKET_UNKNOWN) {
         ASSERT_EQ(buffer_wrapper.deserialize(packet), Fw::FW_SERIALIZE_OK);
         // For now, only FilePackets take this path
@@ -175,20 +170,20 @@ namespace Svc {
     )
   {
     this->pushFromPortEntry_readPoll(fwBuffer);
-    U8* incoming = reinterpret_cast<U8*>(m_incoming_buffer.getdata());
-    U8* outgoing = reinterpret_cast<U8*>(fwBuffer.getdata());
-    for (U32 i = 0; i < m_incoming_buffer.getsize(); i++) {
+    U8* incoming = m_incoming_buffer.getData();
+    U8* outgoing = fwBuffer.getData();
+    for (U32 i = 0; i < m_incoming_buffer.getSize(); i++) {
         outgoing[i] = incoming[i];
     }
-    fwBuffer.setsize(m_incoming_buffer.getsize());
+    fwBuffer.setSize(m_incoming_buffer.getSize());
   }
 
   // ----------------------------------------------------------------------
-  // Helper methods 
+  // Helper methods
   // ----------------------------------------------------------------------
 
   void Tester ::
-    connectPorts(void) 
+    connectPorts()
   {
 
     // downlinkPort
@@ -217,62 +212,62 @@ namespace Svc {
 
     // fileUplinkBufferSendOut
     this->component.set_fileUplinkBufferSendOut_OutputPort(
-        0, 
+        0,
         this->get_from_fileUplinkBufferSendOut(0)
     );
 
     // Log
     this->component.set_Log_OutputPort(
-        0, 
+        0,
         this->get_from_Log(0)
     );
 
     // LogText
     this->component.set_LogText_OutputPort(
-        0, 
+        0,
         this->get_from_LogText(0)
     );
 
     // Time
     this->component.set_Time_OutputPort(
-        0, 
+        0,
         this->get_from_Time(0)
     );
 
     // uplinkPort
     this->component.set_uplinkPort_OutputPort(
-        0, 
+        0,
         this->get_from_uplinkPort(0)
     );
 
     // fileDownlinkBufferSendOut
     this->component.set_fileDownlinkBufferSendOut_OutputPort(
-        0, 
+        0,
         this->get_from_fileDownlinkBufferSendOut(0)
     );
 
     // fileUplinkBufferGet
     this->component.set_fileUplinkBufferGet_OutputPort(
-        0, 
+        0,
         this->get_from_fileUplinkBufferGet(0)
     );
 
     // write
     this->component.set_write_OutputPort(
-        0, 
+        0,
         this->get_from_write(0)
     );
 
     // readPoll
     this->component.set_readPoll_OutputPort(
-        0, 
+        0,
         this->get_from_readPoll(0)
     );
 
   }
 
   void Tester ::
-    initComponents(void) 
+    initComponents()
   {
     this->init();
     this->component.init(

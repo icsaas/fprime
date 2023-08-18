@@ -25,7 +25,7 @@ from fprime_ac.generators import formatters
 from fprime_ac.generators.visitors import AbstractVisitor
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
@@ -35,14 +35,16 @@ from fprime_ac.utils import ConfigManager
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.serialize import startSerialH
-    from fprime_ac.generators.templates.serialize import includes1SerialH
-    from fprime_ac.generators.templates.serialize import includes2SerialH
-    from fprime_ac.generators.templates.serialize import namespaceSerialH
-    from fprime_ac.generators.templates.serialize import publicSerialH
-    from fprime_ac.generators.templates.serialize import protectedSerialH
-    from fprime_ac.generators.templates.serialize import privateSerialH
-    from fprime_ac.generators.templates.serialize import finishSerialH
+    from fprime_ac.generators.templates.serialize import (
+        finishSerialH,
+        includes1SerialH,
+        includes2SerialH,
+        namespaceSerialH,
+        privateSerialH,
+        protectedSerialH,
+        publicSerialH,
+        startSerialH,
+    )
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -84,18 +86,29 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
 
     def _get_args_string(self, obj):
         """
-        Return a string of (type, name) args, comma seperated
+        Return a string of (type, name) args, comma separated
         for use in templates that generate prototypes.
         """
         arg_str = ""
-        for (name, mtype, size, format, comment) in obj.get_members():
+        for (
+            name,
+            mtype,
+            array_size,
+            size,
+            format,
+            comment,
+            default,
+        ) in obj.get_members():
             if isinstance(mtype, tuple):
                 arg_str += "{} {}, ".format(mtype[0][1], name)
-            elif mtype == "string":
+            elif mtype == "string" and array_size is None:
                 arg_str += "const {}::{}String& {}, ".format(obj.get_name(), name, name)
+            elif mtype == "string" and array_size is not None:
+                arg_str += "const {}::{}String* {}, ".format(obj.get_name(), name, name)
+                arg_str += "NATIVE_INT_TYPE %sSize, " % (name)
             elif mtype not in typelist:
                 arg_str += "const {}& {}, ".format(mtype, name)
-            elif size is not None:
+            elif array_size is not None:
                 arg_str += "const {}* {}, ".format(mtype, name)
                 arg_str += "NATIVE_INT_TYPE %sSize, " % (name)
             else:
@@ -105,13 +118,56 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
         arg_str = arg_str.strip(", ")
         return arg_str
 
+    def _get_args_string_scalar_init(self, obj):
+        """
+        Return a string of (type, name) args, comma separated
+        where array arguments are represented by single element
+        values for use in templates that generate prototypes.
+        If no arguments are arrays, function returns None.
+        """
+        arg_str = ""
+        contains_array = False
+        for (
+            name,
+            mtype,
+            array_size,
+            size,
+            format,
+            comment,
+            default,
+        ) in obj.get_members():
+            if isinstance(mtype, tuple):
+                arg_str += "{} {}, ".format(mtype[0][1], name)
+            elif mtype == "string":
+                arg_str += "const {}::{}String& {}, ".format(obj.get_name(), name, name)
+            elif mtype not in typelist:
+                arg_str += "const {}& {}, ".format(mtype, name)
+            elif array_size is not None:
+                arg_str += "const {} {}, ".format(mtype, name)
+                contains_array = True
+            else:
+                arg_str += "{} {}".format(mtype, name)
+                arg_str += ", "
+        if not contains_array:
+            return None
+        arg_str = arg_str.strip(", ")
+        return arg_str
+
     def _get_conv_mem_list(self, obj):
         """
         Return a list of port argument tuples
         """
-        arg_list = list()
+        arg_list = []
 
-        for (name, mtype, size, format, comment) in obj.get_members():
+        for (
+            name,
+            mtype,
+            array_size,
+            size,
+            format,
+            comment,
+            default,
+        ) in obj.get_members():
             typeinfo = None
             if isinstance(mtype, tuple):
                 mtype = mtype[0][1]
@@ -122,8 +178,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
             elif mtype not in typelist:
                 typeinfo = "extern"
 
-            arg_list.append((name, mtype, size, format, comment, typeinfo))
-
+            arg_list.append((name, mtype, array_size, size, format, comment, typeinfo))
         return arg_list
 
     def _get_enum_string_list(self, enum_list):
@@ -163,7 +218,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms obj: the instance of the concrete element to operation on.
+        @param obj: the instance of the concrete element to operation on.
         """
         # Build filename here...
         if self.__config.get("serialize", "XMLDefaultFileName") == "True":
@@ -174,8 +229,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
                 + self.__config.get("serialize", "SerializableH")
             )
             PRINT.info(
-                "Generating code filename: %s, using XML namespace and name attributes..."
-                % filename
+                f"Generating code filename: {filename}, using XML namespace and name attributes..."
             )
         else:
             xml_file = obj.get_xml_filename()
@@ -199,11 +253,9 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
                 PRINT.info(msg)
                 sys.exit(-1)
 
-        # Open file for writting here...
+        # Open file for writing here...
         DEBUG.info("Open file: %s" % filename)
         self.__fp = open(filename, "w")
-        if self.__fp is None:
-            raise Exception("Could not open %s file.") % filename
         DEBUG.info("Completed")
 
     def startSourceFilesVisit(self, obj):
@@ -221,7 +273,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Serial types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = includes1SerialH.includes1SerialH()
         self._writeTmpl(c, "includes1Visit")
@@ -230,7 +282,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate internal includes within a file.
         Usually used for data type includes and system includes.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = includes2SerialH.includes2SerialH()
         c.xml_includes_list = obj.get_xml_includes()
@@ -255,7 +307,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate namespace code within a file.
         Also any pre-condition code is generated.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = namespaceSerialH.namespaceSerialH()
         if obj.get_namespace() is None:
@@ -277,18 +329,19 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = publicSerialH.publicSerialH()
         c.name = obj.get_name()
         c.args_proto = self._get_args_string(obj)
+        c.args_proto_scalar_init = self._get_args_string_scalar_init(obj)
         c.members = self._get_conv_mem_list(obj)
         self._writeTmpl(c, "publicVisit")
 
     def protectedVisit(self, obj):
         """
         Defined to generate protected stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = protectedSerialH.protectedSerialH()
         c.uuid = obj.get_typeid()
@@ -299,7 +352,7 @@ class SerialHVisitor(AbstractVisitor.AbstractVisitor):
     def privateVisit(self, obj):
         """
         Defined to generate private stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = privateSerialH.privateSerialH()
         self._writeTmpl(c, "privateVisit")

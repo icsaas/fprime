@@ -23,21 +23,23 @@ from fprime_ac.generators import formatters
 from fprime_ac.generators.visitors import AbstractVisitor
 
 #
-# Python extention modules and custom interfaces
+# Python extension modules and custom interfaces
 #
 # from Cheetah import Template
 # from fprime_ac.utils import version
-from fprime_ac.utils import ConfigManager
+from fprime_ac.utils import ConfigManager, TypesList
 
 #
 # Import precompiled templates here
 #
 try:
-    from fprime_ac.generators.templates.port import includes1PortCpp
-    from fprime_ac.generators.templates.port import namespacePortCpp
-    from fprime_ac.generators.templates.port import publicPortCpp
-    from fprime_ac.generators.templates.port import privatePortCpp
-    from fprime_ac.generators.templates.port import finishPortCpp
+    from fprime_ac.generators.templates.port import (
+        finishPortCpp,
+        includes1PortCpp,
+        namespacePortCpp,
+        privatePortCpp,
+        publicPortCpp,
+    )
 except ImportError:
     print("ERROR: must generate python templates first.")
     sys.exit(-1)
@@ -76,18 +78,20 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
 
     def _get_args_proto_string(self, obj):
         """
-        Return a string of (type, name) args, comma seperated
+        Return a string of (type, name) args, comma separated
         for use in templates that generate prototypes.
         """
         args = obj.get_args()
         arg_str = ""
         for arg in args:
             t = arg.get_type()
+            isEnum = False
             #
             # Grab enum type here...
             if isinstance(t, tuple):
                 if t[0][0].upper() == "ENUM":
                     t = t[0][1]
+                    isEnum = True
                 else:
                     PRINT.info(
                         "ERROR: Ill formed enumeration type...(name: %s, type: %s"
@@ -108,8 +112,10 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
                 t = t + " *"
             elif arg.get_modifier() == "reference":
                 t = t + " &"
-            else:
+            elif TypesList.isPrimitiveType(t) or isEnum:
                 t = t + " "
+            else:
+                t = "const " + t + " &"
 
             arg_str += "{}{}".format(t, arg.get_name())
             arg_str += ", "
@@ -118,7 +124,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
 
     def _get_args_string(self, obj):
         """
-        Return a string of name args, comma seperated
+        Return a string of name args, comma separated
         for use in templates that generate method or function calls.
         """
         args = obj.get_args()
@@ -133,7 +139,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
         """
         Return a list of port argument tuples
         """
-        arg_list = list()
+        arg_list = []
 
         for arg in obj.get_args():
             n = arg.get_name()
@@ -158,14 +164,13 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
     def initFilesVisit(self, obj):
         """
         Defined to generate files for generated code products.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         # Build filename here...
         if self.__config.get("port", "XMLDefaultFileName") == "True":
             filename = obj.get_type() + self.__config.get("port", "PortCpp")
             PRINT.info(
-                "Generating code filename: %s, using XML namespace and name attributes..."
-                % filename
+                f"Generating code filename: {filename}, using XML namespace and name attributes..."
             )
         else:
             xml_file = obj.get_xml_filename()
@@ -187,11 +192,9 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
                 PRINT.info(msg)
                 raise ValueError(msg)
 
-        # Open file for writting here...
+        # Open file for writing here...
         DEBUG.info("Open file: %s" % filename)
         self.__fp = open(filename, "w")
-        if self.__fp is None:
-            raise Exception("Could not open %s file.") % filename
         DEBUG.info("Completed")
 
     def startSourceFilesVisit(self, obj):
@@ -203,7 +206,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate includes within a file.
         Usually used for the base classes but also for Port types
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         relative_path = self.relativePath()
         #
@@ -228,14 +231,14 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
         """
         Defined to generate internal includes within a file.
         Usually used for data type includes and system includes.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def namespaceVisit(self, obj):
         """
         Defined to generate namespace code within a file.
         Also any pre-condition code is generated.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = namespacePortCpp.namespacePortCpp()
         if obj.get_namespace() is None:
@@ -251,7 +254,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
     def publicVisit(self, obj):
         """
         Defined to generate public stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = publicPortCpp.publicPortCpp()
         c.name = obj.get_type()
@@ -279,7 +282,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
     def protectedVisit(self, obj):
         """
         Defined to generate protected stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
 
     def _replace_enum(self, t):
@@ -299,12 +302,12 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
     def privateVisit(self, obj):
         """
         Defined to generate private stuff within a class.
-        @parms args: the instance of the concrete element to operation on.
+        @param args: the instance of the concrete element to operation on.
         """
         c = privatePortCpp.privatePortCpp()
         c.name = obj.get_type()
         tmp = [(a.get_name(), a.get_type(), a.get_modifier()) for a in obj.get_args()]
-        # Make a enum marker list here for template to use...
+        # Make an enum marker list here for template to use...
         c.enum_marker = []
         for i in tmp:
             if isinstance(i[1], tuple):
@@ -352,7 +355,7 @@ class PortCppVisitor(AbstractVisitor.AbstractVisitor):
         c.args = [
             (a.get_name(), a.get_type(), a.get_modifier()) for a in obj.get_args()
         ]
-        # Make a enum marker list here for template to use...
+        # Make an enum marker list here for template to use...
         c.enum_marker = []
         for i in c.args:
             if isinstance(i[1], tuple):
