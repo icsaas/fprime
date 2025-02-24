@@ -30,11 +30,7 @@ namespace TestComponents {
       //! Construct object TestSerial
       //!
       TestSerialImpl(
-#if FW_OBJECT_NAMES == 1
           const char *const compName //!< The component name
-#else
-          void
-#endif
       );
 
       //! Initialize object TestSerial
@@ -47,7 +43,7 @@ namespace TestComponents {
 
       //! Destroy object TestSerial
       //!
-      ~TestSerialImpl(void);
+      ~TestSerialImpl();
 
     PRIVATE:
 
@@ -58,21 +54,21 @@ namespace TestComponents {
       //! Handler implementation for SerialInSync
       //!
       void SerialInSync_handler(
-        NATIVE_INT_TYPE portNum, //!< The port number
+        FwIndexType portNum, //!< The port number
         Fw::SerializeBufferBase &Buffer //!< The serialization buffer
       );
 
       //! Handler implementation for SerialInGuarded
       //!
       void SerialInGuarded_handler(
-        NATIVE_INT_TYPE portNum, //!< The port number
+        FwIndexType portNum, //!< The port number
         Fw::SerializeBufferBase &Buffer //!< The serialization buffer
       );
 
       //! Handler implementation for SerialInAsync
       //!
       void SerialInAsync_handler(
-        NATIVE_INT_TYPE portNum, //!< The port number
+        FwIndexType portNum, //!< The port number
         Fw::SerializeBufferBase &Buffer //!< The serialization buffer
       );
 
