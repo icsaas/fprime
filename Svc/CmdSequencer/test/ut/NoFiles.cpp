@@ -1,46 +1,44 @@
-// ====================================================================== 
+// ======================================================================
 // \title  NoFiles.cpp
 // \author Canham/Bocchino
 // \brief  Test immediate command sequences with EOS record
 //
 // \copyright
-// Copyright (C) 2018 California Institute of Technology.
+// Copyright (C) 2009-2018 California Institute of Technology.
 // ALL RIGHTS RESERVED.  United States Government Sponsorship
 // acknowledged.
-// 
-// ====================================================================== 
+// ======================================================================
 
 #include "Svc/CmdSequencer/test/ut/CommandBuffers.hpp"
 #include "Svc/CmdSequencer/test/ut/NoFiles.hpp"
-#include "Os/Stubs/FileStubs.hpp"
 
 namespace Svc {
 
   namespace NoFiles {
 
     // ----------------------------------------------------------------------
-    // Constructors 
+    // Constructors
     // ----------------------------------------------------------------------
 
-    Tester ::
-      Tester(const SequenceFiles::File::Format::t format) :
-        Svc::Tester(format)
+    CmdSequencerTester ::
+      CmdSequencerTester(const SequenceFiles::File::Format::t format) :
+        Svc::CmdSequencerTester(format)
     {
 
     }
 
     // ----------------------------------------------------------------------
-    // Tests 
+    // Tests
     // ----------------------------------------------------------------------
 
-    void Tester ::
-      Init(void)
+    void CmdSequencerTester ::
+      Init()
     {
       // Nothing to do
     }
 
-    void Tester ::
-      NoSequenceActive(void) 
+    void CmdSequencerTester ::
+      NoSequenceActive()
     {
 
       // Send cancel command

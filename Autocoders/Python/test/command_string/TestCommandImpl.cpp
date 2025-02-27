@@ -6,13 +6,9 @@
  */
 
 #include <Autocoders/Python/test/command_string/TestCommandImpl.hpp>
-#include <stdio.h>
+#include <cstdio>
 
-#if FW_OBJECT_NAMES == 1
 TestCommand1Impl::TestCommand1Impl(const char* name) :  AcTest::TestCommandComponentBase(name)
-#else
-TestCommand1Impl::TestCommand1Impl() :  AcTest::TestCommandComponentBase()
-#endif
 {
 }
 
@@ -23,7 +19,7 @@ void TestCommand1Impl::init(NATIVE_INT_TYPE queueDepth) {
 TestCommand1Impl::~TestCommand1Impl() {
 }
 
-void TestCommand1Impl::aport_handler(NATIVE_INT_TYPE portNum, I32 arg4, F32 arg5, U8 arg6) {
+void TestCommand1Impl::aport_handler(FwIndexType portNum, I32 arg4, F32 arg5, U8 arg6) {
 
 }
 
@@ -46,5 +42,5 @@ void TestCommand1Impl::TEST_CMD_1_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, I3
     }
 
     printf("Got command args: %d \"%s\" %s\n", arg1, arg2.toChar(),enum_str);
-    this->cmdResponse_out(opCode,cmdSeq,Fw::COMMAND_OK);
+    this->cmdResponse_out(opCode,cmdSeq,Fw::CmdResponse::OK);
 }

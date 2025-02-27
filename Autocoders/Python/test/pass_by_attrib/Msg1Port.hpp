@@ -12,7 +12,7 @@
 #include <Fw/Port/FwInputPortBase.hpp>
 #include <Fw/Port/FwOutputPortBase.hpp>
 #include <Fw/Comp/FwCompBase.hpp>
-#include <Fw/Types/FwBasicTypes.hpp>
+#include <FpConfig.hpp>
 #include <Fw/Types/FwSerializable.hpp>
 
 #include <Fw/Types/FwStringType.hpp>
@@ -25,10 +25,10 @@ namespace Ports {
         enum {
             SERIALIZED_SIZE = sizeof(U32) + sizeof(U32 *) + sizeof(U32)
         };
-        typedef void (*CompFuncPtr)(Fw::ComponentBase* callComp, NATIVE_INT_TYPE portNum, U32 arg1, U32 *arg2, U32 &arg3);
+        typedef void (*CompFuncPtr)(Fw::ComponentBase* callComp, FwIndexType portNum, U32 arg1, U32 *arg2, U32 &arg3);
 
-        InputMsg1Port(void);
-        void init(void);
+        InputMsg1Port();
+        void init();
         void addCallComp(Fw::ComponentBase* callComp, CompFuncPtr funcPtr);
         void invoke(U32 arg1, U32 *arg2, U32 &arg3);
     protected:
@@ -41,8 +41,8 @@ namespace Ports {
 
     class OutputMsg1Port : public Fw::OutputPortBase {
       public:
-        OutputMsg1Port(void);
-        void init(void);
+        OutputMsg1Port();
+        void init();
         void addCallPort(InputMsg1Port* callPort);
         void invoke(U32 arg1, U32 *arg2, U32 &arg3);
       protected:
