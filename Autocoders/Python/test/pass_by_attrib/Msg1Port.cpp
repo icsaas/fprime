@@ -11,15 +11,15 @@ namespace Ports {
         class Msg1PortBuffer : public Fw::SerializeBufferBase {
 
             public:
-                I32 getBuffCapacity(void) const {
+                I32 getBuffCapacity() const {
                     return sizeof(m_buff);
                 }
 
-                U8* getBuffAddr(void) {
+                U8* getBuffAddr() {
                     return m_buff;
                 }
 
-                const U8* getBuffAddr(void) const {
+                const U8* getBuffAddr() const {
                     return m_buff;
                 }
 
@@ -30,12 +30,12 @@ namespace Ports {
         };
 
     }
-    InputMsg1Port::InputMsg1Port(void) :
+    InputMsg1Port::InputMsg1Port() :
         Fw::InputPortBase(),
         m_func(0) {
     }
 
-    void InputMsg1Port::init(void) {
+    void InputMsg1Port::init() {
         Fw::InputPortBase::init();
     }
 
@@ -71,24 +71,24 @@ namespace Ports {
 
         U32 arg3;
         status = buffer.deserialize(arg3);
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
         U32 *arg2;
         status = buffer.deserialize(static_cast<void *>(arg2));
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
         U32 arg1;
         status = buffer.deserialize(arg1);
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
 
         this->m_func(this->m_comp, this->m_portNum, arg1, arg2, arg3);
     }
 #endif
 
-OutputMsg1Port::OutputMsg1Port(void) :
+OutputMsg1Port::OutputMsg1Port() :
             Fw::OutputPortBase(),
     m_port(0) {
 }
 
-void OutputMsg1Port::init(void) {
+void OutputMsg1Port::init() {
     Fw::OutputPortBase::init();
 }
 
@@ -114,13 +114,13 @@ void OutputMsg1Port::invoke(U32 arg1, U32 *arg2, U32 &arg3) {
         Fw::SerializeStatus status;
         Msg1PortBuffer _buffer;
         status = _buffer.serialize(arg1);
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
 
         status = _buffer.serialize(static_cast<void *>(arg2));
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
 
         status = _buffer.serialize(arg3);
-        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<NATIVE_INT_TYPE>(status));
+        FW_ASSERT(Fw::FW_SERIALIZE_OK == status,static_cast<FwAssertArgType>(status));
 
         this->m_serPort->invokeSerial(_buffer);
 #endif

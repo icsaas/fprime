@@ -1,4 +1,4 @@
-// ====================================================================== 
+// ======================================================================
 // \title  FatalHandlerImpl.hpp
 // \author tcanham
 // \brief  hpp file for FatalHandler component implementation class
@@ -7,8 +7,8 @@
 // Copyright 2009-2015, by the California Institute of Technology.
 // ALL RIGHTS RESERVED.  United States Government Sponsorship
 // acknowledged.
-// 
-// ====================================================================== 
+//
+// ======================================================================
 
 #ifndef FatalHandler_HPP
 #define FatalHandler_HPP
@@ -17,7 +17,7 @@
 
 namespace Svc {
 
-  class FatalHandlerComponentImpl :
+  class FatalHandlerComponentImpl final :
     public FatalHandlerComponentBase
   {
 
@@ -33,15 +33,9 @@ namespace Svc {
           const char *const compName /*!< The component name*/
       );
 
-      //! Initialize object FatalHandler
-      //!
-      void init(
-          const NATIVE_INT_TYPE instance = 0 /*!< The instance number*/
-      );
-
       //! Destroy object FatalHandler
       //!
-      ~FatalHandlerComponentImpl(void);
+      ~FatalHandlerComponentImpl();
 
     PRIVATE:
 
@@ -52,7 +46,7 @@ namespace Svc {
       //! Handler implementation for FatalReceive
       //!
       void FatalReceive_handler(
-          const NATIVE_INT_TYPE portNum, /*!< The port number*/
+          const FwIndexType portNum, /*!< The port number*/
           FwEventIdType Id /*!< The ID of the FATAL event*/
       );
 

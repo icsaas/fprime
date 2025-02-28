@@ -1,14 +1,13 @@
-// ====================================================================== 
+// ======================================================================
 // \title  Buffers.cpp
 // \author Rob Bocchino
 // \brief  F Prime sequence file headers
 //
 // \copyright
-// Copyright (C) 2018 California Institute of Technology.
+// Copyright (C) 2009-2018 California Institute of Technology.
 // ALL RIGHTS RESERVED.  United States Government Sponsorship
 // acknowledged.
-// 
-// ====================================================================== 
+// ======================================================================
 
 #include "gtest/gtest.h"
 #include "Os/File.hpp"
@@ -21,19 +20,19 @@ namespace Svc {
     namespace Buffers {
 
       NATIVE_UINT_TYPE FileBuffer ::
-        getBuffCapacity(void) const 
+        getBuffCapacity() const
       {
         return sizeof(m_buff);
       }
 
       U8* FileBuffer ::
-        getBuffAddr(void) 
+        getBuffAddr()
       {
         return m_buff;
       }
 
       const U8* FileBuffer ::
-        getBuffAddr(void) const 
+        getBuffAddr() const
       {
         return m_buff;
       }
@@ -44,11 +43,11 @@ namespace Svc {
       ) {
         Os::File file;
         ASSERT_EQ(file.open(fileName, Os::File::OPEN_WRITE), Os::File::OP_OK);
-        NATIVE_INT_TYPE size = buffer.getBuffLength();
+        FwSignedSizeType size = buffer.getBuffLength();
         const U32 expectedSize = size;
         const U8 *const buffAddr = buffer.getBuffAddr();
         ASSERT_EQ(
-            file.write(buffAddr, size, true),
+            file.write(buffAddr, size, Os::File::WaitType::WAIT),
             Os::File::OP_OK
         );
         ASSERT_EQ(expectedSize, static_cast<U32>(size));

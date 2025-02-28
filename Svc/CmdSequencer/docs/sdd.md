@@ -1,4 +1,3 @@
-\page SvcCmdSequencerComponent Svc::CmdSequencer Component
 # Svc::CmdSequencer Component
 
 ## 1 Introduction
@@ -10,12 +9,12 @@ The command sequencer is a component that iterates through a set of commands con
 The requirements for `Svc::CmdSequencer` are as follows:
 
 Requirement | Description | Verification Method | Rationale
------------ | ----------- | ------------------- | -------- 
+----------- | ----------- | ------------------- | --------
 ISF-CMDS-001 | The `Svc::CmdSequencer` component shall read sequence files. | Unit Test | CmdSequencer gets commands from the sequence file.
 ISF-CMDS-002 | The `Svc::CmdSequencer` component shall validate the sequence files with a CRC. | Unit Test | CmdSequencer need to know it has a valid file.
 ISF-CMDS-003 | The `Svc::CmdSequencer` component shall provide a command to validate the sequence file. | Unit Test | Waiting to validate the file only when running it can cause operational issues
 ISF-CMDS-004 | The `Svc::CmdSequencer` component shall cancel the sequence upon receiving a failed command status. | Unit Test | A sequence should not continue if a command fails since subsequent commands may depend on the outcome
-ISF-CMDS-005 | The `Svc::CmdSequencer` component shall provide a command to cancel the existing sequence | Unit Test | Operator should be able to cancel the sequence if it is hung or needs to be stopped. 
+ISF-CMDS-005 | The `Svc::CmdSequencer` component shall provide a command to cancel the existing sequence | Unit Test | Operator should be able to cancel the sequence if it is hung or needs to be stopped.
 ISF-CMDS-006 | The `Svc::CmdSequencer` component shall provide an overall sequence timeout. | Unit Test | Sequencer should quit if a component fails to send a command response
 
 ## 3 Design
@@ -43,7 +42,7 @@ pingIn|Svc::Ping|async input|Input ping call
 pingOut|Svc::Ping|output|Reply for ping
 schedIn|Svc::Sched|async input|Scheduler input - timed commands will be checked
 comCmdOut|Fw::Com|output|Sends command buffers for each command in sequence
-cmdResponseIn|Fw::CmdResponse|asyc input|Received status of last dispatched command
+cmdResponseIn|Fw::CmdResponse|async input|Received status of last dispatched command
 seqRunIn|Svc::CmdSeqIn|async input|Receives requests for running sequences from other components
 seqDone|Fw::CmdResponse|output|outputs status of sequence run; meant to be used with `seqRunIn`
 
@@ -77,7 +76,7 @@ The `cmdResponseIn` port is called when a command in a sequence is completed. If
 <a name="seqRunIn"></a>
 ##### 3.2.3.3 seqRunIn
 
-This port takes a single argument `filename` of type `Fw::EightyCharString`. In
+This port takes a single argument `filename` of type `Fw::String`. In
 general, sending `filename` on this port has the same  effect as issuing
 a `CS_Run` command with `filename` as the file name argument.
 
@@ -93,7 +92,7 @@ these operations clear the buffer.
 
 ##### 3.2.3.4 pingIn
 
-The `pingIn` port is called by the `Svc::Health` component to verify that the `CmdSequencer` thread is still functional. The handler simply takes the provided code and calls the `pingOut` port. 
+The `pingIn` port is called by the `Svc::Health` component to verify that the `CmdSequencer` thread is still functional. The handler simply takes the provided code and calls the `pingOut` port.
 
 ### 3.3 Component Structure
 
@@ -101,7 +100,7 @@ The `pingIn` port is called by the `Svc::Health` component to verify that the `C
 
 The `CmdSequencer` class defines the following types:
 
-* <a name="Sequence">`Sequence`</a>: 
+* <a name="Sequence">`Sequence`</a>:
 An abstract class representing a command sequence.
 It provides the following pure virtual functions, which
 its concrete subclasses must implement:
@@ -126,17 +125,17 @@ unless the sequence has zero records.
     * `clear`: Clear the current sequence.
 After calling this function, `hasMoreRecords` should return `false`.
 
-* <a name="Sequence_Header">`Sequence::Header`</a>: 
+* <a name="Sequence_Header">`Sequence::Header`</a>:
 A class representing a sequence header.
 It contains member variables corresponding to the header fields
 of the [F Prime sequence format](#F_Prime_Sequence_Format).
 
-* <a name="Sequence_Record">`Sequence::Record`</a>: 
+* <a name="Sequence_Record">`Sequence::Record`</a>:
 A class representing a sequence record.
 It contains member variables corresponding to the record fields
 of the [F Prime sequence format](#F_Prime_Sequence_Format).
 
-* <a name="F_Prime_Sequence">`FPrimeSequence`</a>: 
+* <a name="F_Prime_Sequence">`FPrimeSequence`</a>:
 A concrete subclass of [`Sequence`](#Sequence)
 that implements the virtual functions as follows:
 
@@ -169,12 +168,12 @@ The `setTimeout()` public method sets the command timeout value. When a command 
 This function has a single argument of type [`CmdSequencer::Sequence&`](#Sequence).
 By default, `CmdSequencer` uses an instance of
 [`FPrimeSequence`](#F_Prime_Sequence) to load and run binary sequences
-conforming to the specification given in 
+conforming to the specification given in
 [**F Prime Sequence Format**](#F_Prime_Sequence_Format).
 After you call `setSequenceFormat`, `CmdSequencer` uses the object
 passed in as its argument to load and run sequences.
 By defining a suitable subclass of [`CmdSequencer::Sequence&`](#Sequence)
-and passing in an instance of this subclass, 
+and passing in an instance of this subclass,
 you can use a project-specific sequence format. You can also change
 the internal representation for the sequence: for example, you can have
 the `Sequence` subclass read the next record from the disk instead of loading
@@ -188,7 +187,7 @@ The `allocateBuffer()` public method passes a memory allocator to provide memory
 <a name="loadSequence"></a>
 ##### 3.3.2.4 loadSequence (Optional)
 
-This function takes a single argument `fileName` of type `Fw::EightyCharString`.
+This function takes a single argument `fileName` of type `Fw::String`.
 When you call this function, `CmdSequencer` loads the sequence file `fileName`
 into its buffer so that you can execute it later by calling
 [`seqRunIn`](#seqRunIn).
@@ -236,7 +235,7 @@ A utility is provided that will convert a text file listing of commands and thei
 
 It can be run by invoking:
 
-`Gse/bin/run_tinyseqgen.sh <input text file>`
+`fprime-seqgen --help`
 
 The syntax of the file is as follows:
 
@@ -296,7 +295,7 @@ where:
 
 Note that the time is encoded in UTC with an epoch of 1/1/1970.
 
-An example can be seen in [Gse/bin/simple_sequence.seq](../../../Gse/bin/simple_sequence.seq)
+An example can be seen in the F´ GDS repository under `examples/`: https://github.com/fprime-community/fprime-gds/tree/devel/examples
 
 ### 3.4 Component State
 
@@ -312,17 +311,15 @@ TBD
 
 ## 4 Module Checklists
 
-[Design Checklist](Checklist_Design.xlsx)
-
-[Code Checklist](Checklist_Code.xlsx)
-
-[Unit Test Checklist](Checklist_Unit_Test.xls)
+Checklist |
+-------- |
+[Design](Checklist_Design.xlsx) |
+[Code](Checklist_Code.xlsx) |
+[Unit Test](Checklist_Unit_Test.xls) |
 
 ## 5 Unit Testing
 
-[CmdSequencerImpl.cpp](../test/ut/output/CmdSequencerImpl.cpp.gcov)
-
-[CmdSequencerComponentAc.cpp](../test/ut/output/CmdSequencerComponentAc.cpp.gcov)
+To see unit test coverage run fprime-util check --coverage
 
 ## 6 Change log
 Date | Change Description
